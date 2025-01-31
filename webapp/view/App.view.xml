@@ -1,0 +1,73 @@
+<mvc:View
+	controllerName="com.kmsa.dashboard.controller.App"
+	xmlns:mvc="sap.ui.core.mvc"
+	height="100%"
+    xmlns="sap.m"
+    xmlns:ff="sap.f"
+    xmlns:core="sap.ui.core"
+    xmlns:tnt="sap.tnt"
+>
+
+        <tnt:ToolPage id="toolPage">
+            <tnt:header>
+				    <tnt:ToolHeader>
+					<Button
+					
+					id="sideNavigationToggleButton"
+					icon="sap-icon://menu2"
+					type="Transparent"
+					press=".onMenuButtonPress">
+					<layoutData>
+						<OverflowToolbarLayoutData priority="NeverOverflow" />
+					</layoutData>
+				</Button>
+
+				<Image height="3.5rem"
+					   class="sapUiSmallMarginBegin"
+					   src="./img/logo.svg" />
+
+
+					   <ToolbarSpacer>
+					<layoutData>
+						<OverflowToolbarLayoutData priority="NeverOverflow" minWidth="20px" />
+					</layoutData>
+				</ToolbarSpacer>
+
+                <Button text="Alan Smith" type="Transparent" press=".handleUserNamePress" ariaHasPopup="Menu">
+					<layoutData>
+						<OverflowToolbarLayoutData priority="NeverOverflow" />
+					</layoutData>
+				</Button>
+
+					</tnt:ToolHeader>
+                <!-- <ff:ShellBar
+                    showMenuButton="true"
+                    homeIcon="./img/logo.svg"
+                    menuButtonPressed="onMenuButtonPress"
+                    showNotifications="true"
+                    notificationsPressed="openNotification"
+                    notificationsNumber="2"
+                   
+                >
+           
+                    <ff:additionalContent>
+                        <OverflowToolbarButton
+                            press="openSettingsMenu"
+                            tooltip="Admin Access"
+                            icon="sap-icon://action-settings"
+                        />
+                    </ff:additionalContent>
+                </ff:ShellBar> -->
+            </tnt:header>
+            <tnt:sideContent>
+                <core:Fragment
+                    fragmentName="com.kmsa.dashboard.fragment.SideNavigation"
+                    type="XML"
+                />
+            </tnt:sideContent>
+            <tnt:mainContents>
+                <NavContainer id="app" />
+            </tnt:mainContents>
+        </tnt:ToolPage>
+
+</mvc:View>

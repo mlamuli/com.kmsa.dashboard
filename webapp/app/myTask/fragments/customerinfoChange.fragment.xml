@@ -1,0 +1,57 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:l="sap.ui.layout"
+	xmlns:f="sap.ui.layout.form"
+	xmlns:core="sap.ui.core">
+   <Dialog  id="customerInfo" title="Confirm Customer Email">
+		<VBox class="sapUiSmallMargin">
+		<f:Form id="FormChange471"
+			editable="true">
+
+			<f:layout>
+				<f:ResponsiveGridLayout
+					labelSpanXL="4"
+					labelSpanL="4"
+					labelSpanM="4"
+					labelSpanS="12"
+					adjustLabelSpan="false"
+					emptySpanXL="1"
+					emptySpanL="1"
+					emptySpanM="1"
+					emptySpanS="0"
+					columnsXL="1"
+					columnsL="1"
+					columnsM="1"
+					singleContainerFullSize="false" />
+			</f:layout>
+			<f:formContainers>
+				<f:FormContainer>
+					<f:formElements>
+						<f:FormElement label="Customer">
+							<f:fields>
+								<Text text="{CustomerInfor>/KUNAG}"   />
+							</f:fields>
+						</f:FormElement>
+						<f:FormElement label="Name">
+							<f:fields>
+								<Text text="{CustomerInfor>/NameOrg1}" />
+							</f:fields>
+						</f:FormElement>
+          <f:FormElement label="Main Email">
+						<f:fields>
+								<Input value="{CustomerInfor>/Email}" id="inputCustomerEmail"/>
+							</f:fields>
+            </f:FormElement>
+					</f:formElements>
+				</f:FormContainer>
+			</f:formContainers>
+		</f:Form>
+
+    <FlexBox  alignItems="End"	justifyContent="End">
+    <Button id="onCancel" class="sapUiTinyMarginEnd"  type="Reject" text="Cancel" press="onCancelCustomerInfo"></Button>
+    <Button id="onContinue" class="sapUiTinyMarginEnd" type="Accept" text="Continue" press="onSendEmailCustomerInfo"></Button>
+    </FlexBox>
+
+	</VBox>
+</Dialog>
+</core:FragmentDefinition>

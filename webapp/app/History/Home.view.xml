@@ -1,0 +1,7 @@
+<mvc:View controllerName="com.kmsa.dashboard.app.History.Home"
+    xmlns:mvc="sap.ui.core.mvc" displayBlock="true"
+    xmlns="sap.m">
+    <Page id="history_page1" title="History Page">
+        <content />
+    </Page>
+</mvc:View>

@@ -1,0 +1,17 @@
+{
+  "generator-ui5-app": {
+    "namespace": "com.kmsa.dashboard",
+    "framework": "SAPUI5",
+    "frameworkVersion": "1.129.2",
+    "author": "mla zondo",
+    "initrepo": true,
+    "appId": "com.kmsa.dashboard",
+    "appURI": "com/kmsa/dashboard",
+    "cdnDomain": "ui5.sap.com",
+    "defaultTheme": "sap_horizon",
+    "qunitCoverageFile": "qunit-coverage-istanbul.js",
+    "gte1_98_0": true,
+    "gte1_104_0": true,
+    "setupCompleted": true
+  }
+}

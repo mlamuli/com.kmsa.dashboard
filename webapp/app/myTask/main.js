@@ -1,0 +1,596 @@
+import * as pdfjsLib from 'https://unpkg.com/pdfjs-dist@4.2.67/build/pdf.min.mjs';
+import SignaturePad from 'https://unpkg.com/signature_pad@5.0.1/dist/signature_pad.min.js';
+
+
+const SRC_STAMPS_LOCAL_STORAGE_KEY = 'pdf-stamps-srcStamps';
+
+// The workerSrc property shall be specified.
+pdfjsLib.GlobalWorkerOptions.workerSrc = '//unpkg.com/pdfjs-dist@4.2.67/build/pdf.worker.min.mjs';
+
+const pdfRenderer = {
+	numPages: 0,
+	pageNum: 0,
+	pdf: undefined,
+	viewport: undefined,
+	filename: '',
+	stamps: []
+}
+
+
+const pdf = 'document.pdf';
+
+const pageNum = document.querySelector('#page_num');
+const pageCount = document.querySelector('#page_count');
+const currentPage = document.querySelector('#current_page');
+const previousPage = document.querySelector('#prev_page');
+const nextPage = document.querySelector('#next_page');
+
+const newText = document.querySelector('#addText');
+const addSignature = document.querySelector('#addSignature');
+const canvas_signaturepad = document.getElementById('canvas_signaturepad');
+const staticBackdrop = document.getElementById('staticBackdrop');
+const padStampClear = document.getElementById('padStampClear');
+const padStampAdd = document.getElementById('padStampAdd');
+
+let canvasText = undefined;
+
+const initialState = {
+	filename: '',
+	stamps: [],
+	viewport: undefined,
+	pdfDoc: null,
+	currentPage: 1,
+	pageCount: 0,
+	zoom: 1.5,
+	texts: []
+};
+
+
+
+
+
+
+const stampSection = document.getElementById("stampSection");
+const dialog = document.getElementById('signature-dialog');
+const colorPicker = document.getElementById('color-picker');
+colorPicker.addEventListener('input', (event) => {
+	signaturePad.penColor = event.target.value;
+});
+
+
+
+const oSignature = new SignaturePad(canvas_signaturepad);
+const padCanvas = document.getElementById('padCanvas');
+
+
+
+addSignature.addEventListener('click', () => {
+	$(staticBackdrop).modal('toggle');
+});
+padStampClear.addEventListener('click', () => {
+	oSignature.clear();
+});
+
+
+window.addEventListener('message', function (event) {
+	var otype = typeof event.data;
+	if (event.data instanceof Blob) {
+
+		console.log("Message received from the parent: "); // Message received from parent
+		const reader = new FileReader();
+		reader.onload = function () {
+			loadPdf(reader.result);
+
+			if (window.textCanvas === undefined || window.textCanvas == undefined) {
+
+		    }else{
+				var canvasObjects = window.textCanvas.getObjects();
+				for (let i = canvasObjects.length - 1; i >= 0; i--) {
+					window.textCanvas.remove(canvasObjects[i]);
+				}
+			}
+
+
+		};
+		reader.readAsDataURL(event.data);
+		//initialState.filename = files[0].name;
+
+	} else if (event.data == 'savePdf' || event.data == 'savepdf') {
+		generateStampedPdf();
+	}
+});
+
+
+async function loadPdf(src) {
+	// Load the document.
+	pdfjsLib
+		.getDocument(src)
+		.promise.then((data) => {
+			initialState.pdfDoc = data;
+			console.log('pdfDocument', initialState.pdfDoc);
+
+			pageCount.textContent = initialState.pdfDoc.numPages;
+
+			renderPage();
+		})
+		.catch((err) => {
+			alert(err.message);
+		});
+
+
+}
+
+
+
+
+function renderPdfNav() {
+	if (pdfRenderer.numPages > 1) {
+		pdfNav.style.display = 'flex';
+	} else {
+		pdfNav.style.display = 'none';
+	}
+}
+
+function renderDownloadTab() {
+	if (pdfRenderer.stamps.length > 0) {
+		downloadTab.disabled = false;
+	} else {
+		downloadTab.disabled = true;
+	}
+}
+
+
+window.addEventListener('oSaveDoc', function (event) {
+
+	generateStampedPdf();
+});
+async function generateStampedPdf() {
+
+	const pdfDoc = await PDFLib.PDFDocument.load(await initialState.pdfDoc.getData());
+	const page = pdfDoc.getPage(initialState.currentPage - 1);
+
+	addFabrcionObjectToPdf(page)
+
+	// Save the modified PDF
+	const pdfBytesWithWatermark = await pdfDoc.save();
+
+	// Create a Blob from the PDF bytes and create an object URL
+	const blob = new Blob([pdfBytesWithWatermark], { type: 'application/pdf' });
+	const url = URL.createObjectURL(blob);
+	//window.open(url);
+
+
+
+
+
+
+	var lreader = new FileReader();
+	lreader.readAsDataURL(blob);
+	lreader.onloadend = function () {
+		var base64data = lreader.result;
+	window.parent.postMessage(base64data, "*");
+
+	}
+
+
+
+
+
+	/* // Create a link to download the watermarked PDF
+	const downloadLink = document.createElement('a');
+	downloadLink.href = url;
+	downloadLink.download = pdfRenderer.filename.replace('.pdf', '-stamped.pdf');
+	document.body.append(downloadLink);
+	downloadLink.click();
+
+	// Clean up the object URL
+	URL.revokeObjectURL(url);
+	down
+	loadLink.remove(); */
+}
+
+// fit on mobile
+
+
+
+// Initial call to resizePageBox on page load
+//resizePageBox();
+
+
+function PopPage() {
+	let markerArea = new markerjs2.MarkerArea(document.getElementById('pageBox'));
+
+	// register an event listener for when user clicks OK/save in the marker.js UI
+	markerArea.addEventListener('render', event => {
+		// we are setting the markup result to replace our original image on the page
+		// but you can set a different image or upload it to your server
+		document.getElementById('myimg').src = event.dataUrl;
+	});
+
+	// finally, call the show() method and marker.js UI opens
+	markerArea.settings.displayMode = 'popup';
+	markerArea.show();
+
+}
+
+
+//new code
+
+
+
+
+// Render the page.
+const renderPage = () => {
+	// Load the first page.
+	initialState.pdfDoc
+		.getPage(initialState.currentPage)
+		.then((page) => {
+			console.log('page', page);
+
+			const canvas = document.querySelector('#canvas');
+			const ctx = canvas.getContext('2d');
+			const viewport = page.getViewport({
+				scale: initialState.zoom,
+			});
+			initialState.viewport = viewport;
+
+			canvas.height = viewport.height;
+			canvas.width = viewport.width;
+
+			// Render the PDF page into the canvas context.
+			const renderCtx = {
+				canvasContext: ctx,
+				viewport: viewport,
+			};
+
+			page.render(renderCtx);
+
+			pageNum.textContent = initialState.currentPage;
+
+			if (window.textCanvas === undefined || window.textCanvas == undefined) {
+
+				let textCanvas = document.createElement('canvas');
+				textCanvas.height = initialState.viewport.height;
+				textCanvas.width = initialState.viewport.width;
+
+				pageBox.append(textCanvas);
+				textCanvas = new fabric.Canvas(textCanvas, {
+					containerClass: 'overlay2'
+				});
+				textCanvas.on({
+					'object:modified': callbackModifyingText
+				});
+
+				textCanvas.setZoom(initialState.zoom);
+				window.textCanvas = textCanvas;
+
+
+
+			}
+
+			let mainCanvas = document.getElementById('canvas');
+			mainCanvas.setAttribute('class', 'overlay0');
+
+
+			//renderStamps();
+
+			//resizePageBox();
+			//renderPdfNav();
+			//renderDownloadTab();
+		});
+};
+
+
+
+const showPrevPage = () => {
+	if (initialState.pdfDoc === null || initialState.currentPage <= 1)
+		return;
+	initialState.currentPage--;
+	// Render the current page.
+	currentPage.value = initialState.currentPage;
+	renderPage();
+};
+
+const showNextPage = () => {
+	if (
+		initialState.pdfDoc === null ||
+		initialState.currentPage >= initialState.pdfDoc._pdfInfo.numPages
+	)
+		return;
+
+	initialState.currentPage++;
+	currentPage.value = initialState.currentPage;
+	renderPage();
+};
+
+// Button events.
+previousPage.addEventListener('click', showPrevPage);
+nextPage.addEventListener('click', showNextPage);
+
+// Keypress event.
+currentPage.addEventListener('keypress', (event) => {
+	if (initialState.pdfDoc === null) return;
+	// Get the key code.
+	const keycode = event.keyCode ? event.keyCode : event.which;
+
+	if (keycode === 13) {
+		// Get the new page number and render it.
+		let desiredPage = currentPage.valueAsNumber;
+		initialState.currentPage = Math.min(
+			Math.max(desiredPage, 1),
+			initialState.pdfDoc._pdfInfo.numPages,
+		);
+		currentPage.value = initialState.currentPage;
+		renderPage();
+	}
+});
+
+// Zoom events.
+/* zoomIn.addEventListener('click', () => {
+	if (initialState.pdfDoc === null) return;
+	initialState.zoom *= 4 / 3;
+	renderPage();
+});
+
+zoomOut.addEventListener('click', () => {
+	if (initialState.pdfDoc === null) return;
+	initialState.zoom *= 2 / 3;
+	renderPage();
+}); */
+
+// Tooltip.
+const tooltipTriggerList = [].slice.call(
+	document.querySelectorAll('[data-bs-toggle="tooltip"]'),
+);
+const tooltipList = tooltipTriggerList.map((tooltipTriggerEl) => {
+	return new bootstrap.Tooltip(tooltipTriggerEl);
+});
+
+
+
+// add text
+
+window.textCanvas = undefined;
+const deleteIcon =
+	"data:image/svg+xml,%3C%3Fxml version='1.0' encoding='utf-8'%3F%3E%3C!DOCTYPE svg PUBLIC '-//W3C//DTD SVG 1.1//EN' 'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'%3E%3Csvg version='1.1' id='Ebene_1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' x='0px' y='0px' width='595.275px' height='595.275px' viewBox='200 215 230 470' xml:space='preserve'%3E%3Ccircle style='fill:%23F44336;' cx='299.76' cy='439.067' r='218.516'/%3E%3Cg%3E%3Crect x='267.162' y='307.978' transform='matrix(0.7071 -0.7071 0.7071 0.7071 -222.6202 340.6915)' style='fill:white;' width='65.545' height='262.18'/%3E%3Crect x='266.988' y='308.153' transform='matrix(0.7071 0.7071 -0.7071 0.7071 398.3889 -83.3116)' style='fill:white;' width='65.544' height='262.179'/%3E%3C/g%3E%3C/svg%3E";
+
+const cloneIcon =
+	"data:image/svg+xml,%3C%3Fxml version='1.0' encoding='iso-8859-1'%3F%3E%3Csvg version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' viewBox='0 0 55.699 55.699' width='100px' height='100px' xml:space='preserve'%3E%3Cpath style='fill:%23010002;' d='M51.51,18.001c-0.006-0.085-0.022-0.167-0.05-0.248c-0.012-0.034-0.02-0.067-0.035-0.1 c-0.049-0.106-0.109-0.206-0.194-0.291v-0.001l0,0c0,0-0.001-0.001-0.001-0.002L34.161,0.293c-0.086-0.087-0.188-0.148-0.295-0.197 c-0.027-0.013-0.057-0.02-0.086-0.03c-0.086-0.029-0.174-0.048-0.265-0.053C33.494,0.011,33.475,0,33.453,0H22.177 c-3.678,0-6.669,2.992-6.669,6.67v1.674h-4.663c-3.678,0-6.67,2.992-6.67,6.67V49.03c0,3.678,2.992,6.669,6.67,6.669h22.677 c3.677,0,6.669-2.991,6.669-6.669v-1.675h4.664c3.678,0,6.669-2.991,6.669-6.669V18.069C51.524,18.045,51.512,18.025,51.51,18.001z M34.454,3.414l13.655,13.655h-8.985c-2.575,0-4.67-2.095-4.67-4.67V3.414z M38.191,49.029c0,2.574-2.095,4.669-4.669,4.669H10.845 c-2.575,0-4.67-2.095-4.67-4.669V15.014c0-2.575,2.095-4.67,4.67-4.67h5.663h4.614v10.399c0,3.678,2.991,6.669,6.668,6.669h10.4 v18.942L38.191,49.029L38.191,49.029z M36.777,25.412h-8.986c-2.574,0-4.668-2.094-4.668-4.669v-8.985L36.777,25.412z M44.855,45.355h-4.664V26.412c0-0.023-0.012-0.044-0.014-0.067c-0.006-0.085-0.021-0.167-0.049-0.249 c-0.012-0.033-0.021-0.066-0.036-0.1c-0.048-0.105-0.109-0.205-0.194-0.29l0,0l0,0c0-0.001-0.001-0.002-0.001-0.002L22.829,8.637 c-0.087-0.086-0.188-0.147-0.295-0.196c-0.029-0.013-0.058-0.021-0.088-0.031c-0.086-0.03-0.172-0.048-0.263-0.053 c-0.021-0.002-0.04-0.013-0.062-0.013h-4.614V6.67c0-2.575,2.095-4.67,4.669-4.67h10.277v10.4c0,3.678,2.992,6.67,6.67,6.67h10.399 v21.616C49.524,43.26,47.429,45.355,44.855,45.355z'/%3E%3C/svg%3E%0A";
+
+const deleteImg = document.createElement('img');
+deleteImg.src = deleteIcon;
+
+const cloneImg = document.createElement('img');
+cloneImg.src = cloneIcon;
+
+fabric.Object.prototype.transparentCorners = false;
+fabric.Object.prototype.cornerColor = 'blue';
+fabric.Object.prototype.cornerStyle = 'circle';
+
+
+
+
+newText.addEventListener('click', () => {
+
+
+
+
+	var newID = (new Date()).getTime().toString().substr(5);
+	var text = new fabric.IText('New Text', {
+		lockUniScaling: true,
+		fontSize: 15,
+		fontFamily: 'Times New Roman',
+		left: initialState.viewport.width / 4,
+		top: initialState.viewport.height / 5,
+		myid: newID,
+		objecttype: 'text'
+
+	});
+
+	text.controls.deleteControl = new fabric.Control({
+		x: 0.5,
+		y: -0.5,
+		offsetY: -16,
+		offsetX: 16,
+		cursorStyle: 'pointer',
+		mouseUpHandler: deleteObject,
+		render: renderIcon(deleteImg),
+		cornerSize: 24,
+	});
+
+	text.controls.cloneControl = new fabric.Control({
+		x: -0.5,
+		y: -0.5,
+		offsetY: -16,
+		offsetX: -16,
+		cursorStyle: 'pointer',
+		mouseUpHandler: cloneObject,
+		render: renderIcon(cloneImg),
+		cornerSize: 24,
+	});
+
+	window.textCanvas.add(text);
+	window.textCanvas.setActiveObject(text);
+	window.textCanvas.renderAll();
+
+
+
+
+
+});
+
+
+padStampAdd.addEventListener('click', () => {
+	$(staticBackdrop).modal('toggle');
+	if (!oSignature.isEmpty()) {
+		var imgUrl = oSignature.toDataURL('image/png', {
+			ratio: 1,
+			width: 100,
+			height: 100
+		});
+
+
+
+		var newImag = fabric.Image.fromURL(imgUrl, (img) => {
+
+			img.set({
+				transparentCorners: false,
+				top: 150,
+				left: 150
+
+
+			});
+
+			img.scaleToHeight(100);
+			img.scaleToWidth(200);
+			img.controls.deleteControl = new fabric.Control({
+				x: 0.5,
+				y: -0.5,
+				offsetY: -16,
+				offsetX: 16,
+				cursorStyle: 'pointer',
+				mouseUpHandler: deleteObject,
+				render: renderIcon(deleteImg),
+				cornerSize: 24,
+			});
+
+			img.controls.cloneControl = new fabric.Control({
+				x: -0.5,
+				y: -0.5,
+				offsetY: -16,
+				offsetX: -16,
+				cursorStyle: 'pointer',
+				mouseUpHandler: cloneObject,
+				render: renderIcon(cloneImg),
+				cornerSize: 24,
+			});
+
+
+
+
+			window.textCanvas.add(img);
+
+			window.textCanvas.setActiveObject(img);
+			window.textCanvas.renderAll();
+			oSignature.clear();
+
+		});
+
+
+
+		dialog.close();
+	}
+});
+
+
+function deleteObject(_eventData, transform) {
+	const canvas = transform.target.canvas;
+	canvas.remove(transform.target);
+	canvas.requestRenderAll();
+}
+
+function cloneObject(_eventData, transform) {
+	const canvas = transform.target.canvas;
+
+
+	transform.target.clone(function (cloned) {
+		cloned.left += 10;
+		cloned.top += 10;
+		cloned.controls.deleteControl = transform.target.controls.deleteControl;
+		cloned.controls.cloneControl = transform.target.controls.cloneControl;
+		canvas.add(cloned);
+
+		canvas.setActiveObject(cloned);
+		canvas.renderAll();
+	});
+}
+
+function renderIcon(icon) {
+	return function (ctx, left, top, _styleOverride, fabricObject) {
+		const size = this.cornerSize;
+		ctx.save();
+		ctx.translate(left, top);
+		ctx.rotate(fabric.util.degreesToRadians(fabricObject.angle));
+		ctx.drawImage(icon, -size / 2, -size / 2, size, size);
+		ctx.restore();
+	};
+}
+
+
+function callbackModifyingText(e) {
+	console.log(e);
+	e.target.setCoords()
+	window.textCanvas.renderAll();
+	console.log(e);
+
+
+}
+
+async function addFabrcionObjectToPdf(pdfPage) {
+
+	var objects = window.textCanvas.getObjects();
+	var pageWidth = pdfPage.getWidth();
+	var pageHeight = pdfPage.getHeight();
+
+	const timesRomanFont = await pdfPage.doc.embedFont(PDFLib.StandardFonts.TimesRoman)
+	pdfPage.doc.embedStandardFont(PDFLib.StandardFonts.TimesRoman)
+	pdfPage.translateContent(0, 0);
+	objects.forEach(function (obj) {
+		if (obj.type === 'i-text') {
+			//obj.scale(initialState.zoom);
+
+			var rgbObj = rgbStringToObject(obj.fill);
+			pdfPage.drawText(obj.text, {
+				x: obj.left,
+				y: pdfPage.getHeight() - obj.top - obj.getScaledHeight() + 5,
+				size: obj.fontSize * obj.scaleY,
+				font: timesRomanFont,
+				width: obj.getScaledWidth(),
+				height: obj.getScaledHeight()
+
+
+
+			});
+		}
+		if (obj.type === 'image') {
+			//obj.scale(initialState.zoom);
+
+			(async () => {
+				const image = await pdfPage.doc.embedPng(obj.getSrc());
+
+				pdfPage.drawImage(image, {
+					x: obj.left,
+					y: pdfPage.getHeight() - obj.top - obj.getScaledHeight(),
+					width: obj.getScaledWidth(),
+					height: obj.getScaledHeight()
+					// TODO: blendMode use cases?
+				});
+			})();
+
+
+
+
+
+		}
+
+	});
+	renderPage();
+
+
+}
+
+function rgbStringToObject(rgbString) {
+	const rgbRegex = /rgb\((\d+),(\d+),(\d+)\)/;
+	const match = rgbRegex.exec(rgbString);
+	if (match) {
+		const r = parseInt(match[1], 10);
+		const g = parseInt(match[2], 10);
+		const b = parseInt(match[3], 10);
+		return { r, g, b };
+	}
+	return { r: 0, g: 0, b: 0 };
+}
+
+
+
+

@@ -1,0 +1,29 @@
+<SideNavigation
+    xmlns="sap.tnt"
+    xmlns:core="sap.ui.core"
+    expanded="false"
+    selectedKey="{/selectedKey}"
+    itemSelect="onItemSelect"
+>
+    <NavigationList items="{
+		path: 'navList>/navigation'
+	}">
+        <NavigationListItem
+            text="{navList>title}"
+            icon="{navList>icon}"
+            enabled="{navList>enabled}"
+            expanded="{navList>expanded}"
+            items="{
+			path: 'items',
+			templateShareable: true
+		}"
+            key="{navList>key}"
+        >
+            <NavigationListItem
+                text="{navList>title}"
+                key="{navList>key}"
+                enabled="{navList>enabled}"
+            />
+        </NavigationListItem>
+    </NavigationList>
+</SideNavigation>

@@ -1,0 +1,61 @@
+{
+    "Deliveries": [
+        {
+            "Date": "24/01/24",
+            "DeliveryNoteNo": "87134023",
+            "SalesOrderNo": "2994650",
+            "CustomerOrderNo": "A7AH021006291",
+            "CustomerVatNo": "4880193505",
+            "Customer": "4251917",
+            "BranchNo": "1090 - Durban",
+            "ModelNo": "B287-SA",
+            "SerialNo": "A7AH021006291"
+        },
+        {
+            "Date": "30/01/24",
+            "DeliveryNoteNo": "87134024",
+            "SalesOrderNo": "2994651",
+            "CustomerOrderNo": "A7AH021006292",
+            "CustomerVatNo": "4880193506",
+            "Customer": "4251918",
+            "BranchNo": "1091 - Cape Town",
+            "ModelNo": "B288-SA",
+            "SerialNo": "A7AH021006292"
+        },
+        {
+            "Date": "06/02/24",
+            "DeliveryNoteNo": "87134025",
+            "SalesOrderNo": "2994652",
+            "CustomerOrderNo": "A7AH021006293",
+            "CustomerVatNo": "4880193507",
+            "Customer": "4251919",
+            "BranchNo": "1092 - Johannesburg",
+            "ModelNo": "B289-SA",
+            "SerialNo": "A7AH021006293"
+        },
+        {
+            "Date": "13/02/24",
+            "DeliveryNoteNo": "87134026",
+            "SalesOrderNo": "2994653",
+            "CustomerOrderNo": "A7AH021006294",
+            "CustomerVatNo": "4880193508",
+            "Customer": "4251920",
+            "BranchNo": "1093 - Port Elizabeth",
+            "ModelNo": "B290-SA",
+            "SerialNo": "A7AH021006294"
+        },
+        {
+            "Date": "20/02/24",
+            "DeliveryNoteNo": "87134027",
+            "SalesOrderNo": "2994654",
+            "CustomerOrderNo": "A7AH021006295",
+            "CustomerVatNo": "4880193509",
+            "Customer": "4251921",
+            "BranchNo": "1094 - East London",
+            "ModelNo": "B291-SA",
+            "SerialNo": "A7AH021006295"
+        }
+    ]
+}
+
+

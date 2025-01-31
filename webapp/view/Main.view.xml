@@ -1,0 +1,49 @@
+<mvc:View
+	controllerName="com.kmsa.dashboard.controller.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:w="sap.ui.integration.widgets"
+	xmlns:f="sap.f"
+	core:require="{
+		formatter: 'com/kmsa/dashboard/model/formatter'
+	}">
+
+	<Page
+		showHeader="false"
+		id="page">
+		<content>
+		<ScrollContainer>
+		<f:GridContainer  >
+			<f:layout>
+				<f:GridContainerSettings rowSize="84px" columnSize="84px" gap="15px" />
+			</f:layout>
+			<f:layoutXS>
+				<f:GridContainerSettings rowSize="70px" columnSize="70px" gap="15px" />
+			</f:layoutXS>
+		    <w:Card id="card1" manifest="./app/Home/Cards/Products.json" class="sapUiMediumMargin">
+			<w:layoutData>
+					<f:GridContainerItemLayoutData minRows="3" columns="4" />
+			</w:layoutData>
+		</w:Card>
+
+		<w:Card id="card2" manifest="./app/Home/Cards/Customers.json" class="sapUiMediumMargin">
+			<w:layoutData>
+					<f:GridContainerItemLayoutData minRows="3" columns="4" />
+			</w:layoutData>
+		</w:Card>
+
+        <w:Card id="card3" manifest="./app/Home/Cards/Sales_Totals_by_Amounts.json" class="sapUiMediumMargin">
+			<w:layoutData>
+					<f:GridContainerItemLayoutData minRows="3" columns="4" />
+			</w:layoutData>
+		</w:Card>
+
+	</f:GridContainer>
+	</ScrollContainer>
+		</content>
+	</Page>
+
+</mvc:View>

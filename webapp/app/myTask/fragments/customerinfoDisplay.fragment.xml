@@ -1,0 +1,68 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:l="sap.ui.layout"
+	xmlns:f="sap.ui.layout.form"
+	xmlns:core="sap.ui.core">
+	<Popover
+		id="customerInfoDisplayPop"
+		title="Confirm Customer Details"
+		class="sapUiContentPadding"
+		placement="Right"
+		initialFocus="action">
+		<footer>
+			<Toolbar>
+				<ToolbarSpacer/>
+				<Button
+
+					text="Continue"
+					press="handleActionPress" />
+			</Toolbar>
+		</footer>
+		<VBox class="sapUiSmallMargin">
+		<f:Form id="FormDisplay471"
+			editable="false">
+			<f:title>
+				<core:Title text="Address" />
+			</f:title>
+			<f:layout>
+				<f:ResponsiveGridLayout
+					labelSpanXL="4"
+					labelSpanL="4"
+					labelSpanM="4"
+					labelSpanS="12"
+					adjustLabelSpan="false"
+					emptySpanXL="1"
+					emptySpanL="1"
+					emptySpanM="1"
+					emptySpanS="0"
+					columnsXL="1"
+					columnsL="1"
+					columnsM="1"
+					singleContainerFullSize="false" />
+			</f:layout>
+			<f:formContainers>
+				<f:FormContainer>
+					<f:formElements>
+						<f:FormElement label="Customer">
+							<f:fields>
+								<Text text="{CustomerInfor>/KUNAG}" id="nameText"  />
+							</f:fields>
+						</f:FormElement>
+						<f:FormElement label="Name">
+							<f:fields>
+								<Text text="{CustomerInfor>/NameOrg1}" />
+							</f:fields>
+						</f:FormElement>
+						<f:FormElement label="Main Email">
+							<f:fields>
+								<Text text="{CustomerInfor>/Email}" />
+							</f:fields>
+						</f:FormElement>
+					</f:formElements>
+				</f:FormContainer>
+			</f:formContainers>
+		</f:Form>
+
+		</VBox>
+	</Popover>
+</core:FragmentDefinition>

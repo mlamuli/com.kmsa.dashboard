@@ -1,0 +1,130 @@
+{
+  "_version": "1.12.0",
+  "sap.app": {
+    "id": "com.kmsa.dashboard",
+    "type": "application",
+    "i18n": "i18n/i18n.properties",
+    "title": "{{appTitle}}",
+    "description": "{{appDescription}}",
+    "applicationVersion": {
+      "version": "${version}"
+    },
+    "dataSources": {
+      "DeliveriesService": {
+        "uri": "/sap/opu/odata/sap/ZKMSA_FIORI_DEL_NOTE_LIST_SRV/"  ,
+        "type": "OData",
+        "settings": {
+          "odataVersion": "2.0",
+          "localUri": "localService/ZKMSA_FIORI_DEL_NOTE_LIST_SRV/metadata.xml"
+        }
+      }
+    }
+  },
+  "sap.ui": {
+    "technology": "UI5",
+    "icons": {},
+    "deviceTypes": {
+      "desktop": true,
+      "tablet": true,
+      "phone": true
+    }
+  },
+  "sap.ui5": {
+    "rootView": {
+      "viewName": "com.kmsa.dashboard.view.App",
+      "type": "XML",
+      "async": true,
+      "id": "app"
+    },
+    "dependencies": {
+      "minUI5Version": "1.129.2",
+      "libs": {
+        "sap.ui.core": {},
+        "sap.m": {},
+        "sap.tnt": {}
+      }
+    },
+    "handleValidation": true,
+    "contentDensities": {
+      "compact": true,
+      "cozy": true
+    },
+
+    "models": {
+      "Deliveries":{
+        "type": "sap.ui.model.odata.ODataModel",
+        "dataSource": "DeliveriesService"
+      },
+      "i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "settings": {
+          "bundleName": "com.kmsa.dashboard.i18n.i18n"
+        }
+
+      },
+      "navList": {
+        "type": "sap.ui.model.json.JSONModel",
+        "uri": "model/dashboardList.json"
+      },
+      "DeliveriesOld":{
+        "type": "sap.ui.model.json.JSONModel",
+        "uri": "model/DeliveryNotes.json"
+    }
+   },
+    "routing": {
+      "config": {
+        "routerClass": "sap.m.routing.Router",
+        "viewType": "XML",
+        "viewPath": "com.kmsa.dashboard.view",
+        "controlId": "app",
+        "controlAggregation": "pages",
+        "async": true
+      },
+      "routes": [
+        {
+          "pattern": "",
+          "name": "DeliveryNotesIndex",
+          "target": "TargetMyTask"
+        },
+        {
+          "name": "RouteHistory",
+          "pattern": "history",
+          "target": [
+            "TargetHistory"
+          ]
+        },
+        {
+          "name": "DeliveryNotes",
+          "pattern": "deliverynotes",
+          "target": [
+            "TargetMyTask"
+          ]
+        }
+
+      ],
+      "targets": {
+        "main": {
+          "viewId": "main",
+          "viewName": "Main"
+        },
+        "TargetHistory": {
+          "viewPath": "com.kmsa.dashboard.app.History",
+          "viewType": "XML",
+          "transition": "slide",
+          "clearControlAggregation": false,
+          "viewId": "History",
+          "viewName": "Home"
+        },
+        "TargetMyTask": {
+          "viewPath": "com.kmsa.dashboard.app.myTask",
+          "viewType": "XML",
+          "transition": "slide",
+          "clearControlAggregation": false,
+          "viewId": "myTask",
+          "viewName": "Home"
+        }
+
+      }
+    }
+  }
+}

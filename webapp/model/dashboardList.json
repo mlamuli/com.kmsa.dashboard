@@ -1,0 +1,10 @@
+{
+    "navigation": [
+        {
+            "title": "Delivery Notes",
+            "icon": "sap-icon://notes",
+            "key": "DeliveryNotes"
+        }
+
+    ]
+}

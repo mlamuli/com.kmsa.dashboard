@@ -1,0 +1,116 @@
+<mvc:View controllerName="com.kmsa.dashboard.app.myTask.Home"
+	xmlns:mvc="sap.ui.core.mvc" displayBlock="true"
+	xmlns="sap.m"
+	xmlns:ux="sap.uxap"
+	xmlns:m="sap.m"
+	xmlns:f="sap.f"
+	xmlns:core="sap.ui.core"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:semantic="sap.m.semantic">
+	<!-- <Page id="myTask_page" title="Tasks Page">
+        <content/>
+    </Page> -->
+
+	<SplitContainer >
+		<masterPages>
+			<semantic:MasterPage title="Find Delivery Note">
+				<semantic:landmarkInfo>
+					<PageAccessibleLandmarkInfo rootLabel="Root label" headerLabel="Header label" footerLabel="Footer label"></PageAccessibleLandmarkInfo>
+				</semantic:landmarkInfo>
+				<!-- <semantic:sort>
+					<semantic:SortSelect change="onSemanticSelectChange" items="{
+							path: 'Deliveries>/Deliveries/Filters',
+							sorter: { path: 'Name' }
+							}">
+						<core:Item key="{type}" text="{type}" />
+					</semantic:SortSelect>
+				</semantic:sort> -->
+
+				<!-- Content -->
+				<semantic:content>
+				<FlexBox class="sapUiSmallMargin" alignItems="Start">
+				<ComboBox  id="SearchByCombo" class="sapUiSmallMarginEnd" selectedKey="Vbeln"  selectionChange="OnSearchByChanged">
+				<items>
+					<core:Item xmlns:core="sap.ui.core" key="Vbeln"
+						text="Delivery"  id="Delivery"/>
+					<core:Item xmlns:core="sap.ui.core" key="Kunag"
+						text="Customer" id="Customer"/>
+				</items>
+				</ComboBox>
+				<SearchField id="SearchInput" class="sapUiSmallMarginEnd" placeholder="Delivery Document Number" search="onSearch"/>
+				</FlexBox>
+					<Table id="idProductsTable1" inset="false" items="{path:'DeliveriesList>/'}" class="sapFSemanticPageAlignContent" width="auto" selectionChange="onSelectionChange" includeItemInSelection="true" mode="SingleSelectMaster">
+
+						<columns>
+							<Column>
+								<Text text="Delivery Date"/>
+							</Column>
+							<Column minScreenWidth="Tablet" demandPopin="true">
+								<Text text="Delivery No"/>
+							</Column>
+							<Column minScreenWidth="Tablet" demandPopin="true">
+								<Text text="Customer No"/>
+							</Column>
+						</columns>
+
+						<items>
+						<ColumnListItem vAlign="Middle">
+							<cells>
+								<ObjectIdentifier title="{
+				        path: 'DeliveriesList>Audat',
+				        type: 'sap.ui.model.type.Date',
+				        formatOptions: {
+				          pattern: 'yyyy/MM/dd'
+				        }}"/>
+								<Text text="{DeliveriesList>Vbeln}"/>
+								<Text text="{DeliveriesList>Kunag}"/>
+							</cells>
+						</ColumnListItem>
+						</items>
+					</Table>
+				</semantic:content>
+
+
+
+			</semantic:MasterPage>
+		</masterPages>
+		<detailPages>
+
+
+
+
+
+
+
+			<semantic:DetailPage title="Delivery Date : {DeliveriesItem>/Audat}   -   Delivery No. : {DeliveriesItem>/Vbeln} ">
+
+				<semantic:content >
+
+						<core:HTML class='no-scrollMain' content='&lt;iframe width=&quot;99%&quot;  height=&quot;100%&quot;  src=&quot;./app/myTask/index.html&quot; frameborder=&quot;0&quot; id=&quot;pdfData&quot; /&gt;'></core:HTML>
+
+
+
+				</semantic:content>
+
+
+
+
+
+
+
+
+				<semantic:positiveAction>
+					<semantic:PositiveAction text="Email to Customer" id="onEmailToCustomer" press="onEmailToCustomer"/>
+				</semantic:positiveAction>
+				<semantic:negativeAction>
+					<semantic:NegativeAction text="Save" press="onDocumentSaved"/>
+				</semantic:negativeAction>
+
+
+			</semantic:DetailPage>
+		</detailPages>
+
+	</SplitContainer>
+
+
+</mvc:View>
