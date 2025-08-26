@@ -2,6 +2,9 @@ import * as pdfjsLib from 'https://unpkg.com/pdfjs-dist@4.2.67/build/pdf.min.mjs
 import SignaturePad from 'https://unpkg.com/signature_pad@5.0.1/dist/signature_pad.min.js';
 
 
+
+
+
 const SRC_STAMPS_LOCAL_STORAGE_KEY = 'pdf-stamps-srcStamps';
 
 // The workerSrc property shall be specified.
@@ -15,6 +18,13 @@ const pdfRenderer = {
 	filename: '',
 	stamps: []
 }
+
+const MassMode = {
+	MassMode: false,
+	Number: 0,
+	currentDoc: 0,
+	docsArray: []
+};
 
 
 const pdf = 'document.pdf';
@@ -31,6 +41,15 @@ const canvas_signaturepad = document.getElementById('canvas_signaturepad');
 const staticBackdrop = document.getElementById('staticBackdrop');
 const padStampClear = document.getElementById('padStampClear');
 const padStampAdd = document.getElementById('padStampAdd');
+//const addQAnnotation = document.getElementById('addQAnnotation');
+const quickAddContinue = document.getElementById('quickAddContinue');
+const staticBackdropQuickAdd = document.getElementById('staticBackdropQuickAdd');
+
+const enableSigning = document.getElementById('enableSigning');
+
+const btnParkAndProcess = document.getElementById('btnParkAndProcess');
+
+let pdfPlaceHolders = {};
 
 let canvasText = undefined;
 
@@ -40,6 +59,7 @@ const initialState = {
 	viewport: undefined,
 	pdfDoc: null,
 	currentPage: 1,
+	pageRendering: false ,
 	pageCount: 0,
 	zoom: 1.5,
 	texts: []
@@ -48,8 +68,7 @@ const initialState = {
 
 
 
-
-
+let addDataAfterSignature = false;
 const stampSection = document.getElementById("stampSection");
 const dialog = document.getElementById('signature-dialog');
 const colorPicker = document.getElementById('color-picker');
@@ -59,31 +78,75 @@ colorPicker.addEventListener('input', (event) => {
 
 
 
+
+
+
+
 const oSignature = new SignaturePad(canvas_signaturepad);
 const padCanvas = document.getElementById('padCanvas');
 
 
 
 addSignature.addEventListener('click', () => {
+	enableSigning.checked = true;
 	$(staticBackdrop).modal('toggle');
+
 });
 padStampClear.addEventListener('click', () => {
 	oSignature.clear();
 });
 
 
+/* addQAnnotation.addEventListener('click', () => {
+	pdfPlaceHolders.forEach(function (element) {
+		addNewText(element.str, element.y , element.x , 8 );
+	});
+
+}); */
+
+function base64ToArrayBuffer(base64) {
+	var binaryString = window.atob(base64);
+	var bytes = new Uint8Array(binaryString.length);
+	for (var i = 0; i < binaryString.length; i++) {
+		bytes[i] = binaryString.charCodeAt(i);
+	}
+	return bytes.buffer;
+}
+
+
 window.addEventListener('message', function (event) {
 	var otype = typeof event.data;
+	if (event.data === 'anotateNextPdf') {
+		addNewTextToPdf(pdfPlaceHolders);
+	}
+	if (event.data.MassMode !== undefined) {
+		//console.log("MassMode data received: ", event.data);
+		MassMode.MassMode = event.data.MassMode;
+		MassMode.Number = event.data.Number;
+		MassMode.currentDoc = event.data.currentDoc;
+		MassMode.docsArray = event.data.docsArray;
+		if (MassMode.MassMode) {
+			//document.getElementById('DivMassMode').hidden = false;
+		}else {
+			//document.getElementById('DivMassMode').hidden = true;
+		}
+		//console.log("MassMode data received: ", event.data);
+
+	}
 	if (event.data instanceof Blob) {
 
 		console.log("Message received from the parent: "); // Message received from parent
+
 		const reader = new FileReader();
 		reader.onload = function () {
-			loadPdf(reader.result);
+
+
+
+			loadPdf(reader.result, event.data);
 
 			if (window.textCanvas === undefined || window.textCanvas == undefined) {
 
-		    }else{
+			} else {
 				var canvasObjects = window.textCanvas.getObjects();
 				for (let i = canvasObjects.length - 1; i >= 0; i--) {
 					window.textCanvas.remove(canvasObjects[i]);
@@ -100,23 +163,102 @@ window.addEventListener('message', function (event) {
 	}
 });
 
+window.addEventListener('oSaveDoc', function (event) {
 
-async function loadPdf(src) {
+	//generateStampedPdf();
+
+});
+
+
+async function loadPdf(src, _blob) {
+
+	const buf = await _blob.arrayBuffer();
+
+	const pdfExtract = new window.PDFExtractor();
+
+	const buffer = buf;
+	const options = {};
+	pdfExtract.extractBuffer(buffer, options, (err, data) => {
+		if (err) {
+			console.error(err);
+			return;
+		}
+
+		const filterValues = [
+			"V1",
+			"V2",
+			"V3",
+			"V4",
+			"V5",
+			"V6"
+		];
+
+		data.pages.forEach(function (page, index) {
+			if (index == 0) {
+				pdfPlaceHolders = page.content.filter(el =>
+					filterValues.some(value => el.str.includes(value))
+				);
+				console.log(pdfPlaceHolders);
+
+			}
+		});
+
+		console.log(data);
+	});
+
+
+
+
+/* 	btnParkAndProcess.addEventListener('click', () => {
+		if (MassMode.MassMode) {
+			window.parent.postMessage('parkAndProcessNext', "*");
+			btnParkAndProcess.removeEventListener('click', this);
+			return;
+		}
+	}); */
+
+
+
+	quickAddContinue.addEventListener('click', () => {
+		$(staticBackdropQuickAdd).modal('toggle');
+		if (enableSigning.checked) {
+		$(staticBackdrop).modal('toggle');
+		 addDataAfterSignature = true;
+		}else{
+			addDataAfterSignature = false;
+			addNewTextToPdf(pdfPlaceHolders);
+		}
+
+
+
+
+
+	});
+
+
+
+
 	// Load the document.
 	pdfjsLib
 		.getDocument(src)
 		.promise.then((data) => {
 			initialState.pdfDoc = data;
+
 			console.log('pdfDocument', initialState.pdfDoc);
 
 			pageCount.textContent = initialState.pdfDoc.numPages;
+			if (initialState.pageRendering === false) {
+				renderPage()
+			}
 
-			renderPage();
+		}).then(() => {
+		if (MassMode.MassMode && pdfPlaceHolders.length > 0) {
+					  addNewTextToPdf(pdfPlaceHolders);
+					}
 		})
 		.catch((err) => {
-			alert(err.message);
+			console.error(err);
 		});
-
 
 }
 
@@ -140,16 +282,17 @@ function renderDownloadTab() {
 }
 
 
-window.addEventListener('oSaveDoc', function (event) {
 
-	generateStampedPdf();
-});
 async function generateStampedPdf() {
 
 	const pdfDoc = await PDFLib.PDFDocument.load(await initialState.pdfDoc.getData());
-	const page = pdfDoc.getPage(initialState.currentPage - 1);
+	//const page = pdfDoc.getPage(initialState.currentPage - 1);
+	pdfDoc.getPages().forEach((page, index) => {
 
-	addFabrcionObjectToPdf(page)
+		addFabrcionObjectToPdf(page)
+	});
+
+
 
 	// Save the modified PDF
 	const pdfBytesWithWatermark = await pdfDoc.save();
@@ -168,7 +311,7 @@ async function generateStampedPdf() {
 	lreader.readAsDataURL(blob);
 	lreader.onloadend = function () {
 		var base64data = lreader.result;
-	window.parent.postMessage(base64data, "*");
+		window.parent.postMessage(base64data, "*");
 
 	}
 
@@ -222,12 +365,13 @@ function PopPage() {
 // Render the page.
 const renderPage = () => {
 	// Load the first page.
+
 	initialState.pdfDoc
 		.getPage(initialState.currentPage)
 		.then((page) => {
 			console.log('page', page);
 
-			const canvas = document.querySelector('#canvas');
+			const canvas = document.getElementById('canvas');
 			const ctx = canvas.getContext('2d');
 			const viewport = page.getViewport({
 				scale: initialState.zoom,
@@ -243,7 +387,17 @@ const renderPage = () => {
 				viewport: viewport,
 			};
 
-			page.render(renderCtx);
+			//page.render(renderCtx);
+
+
+			var renderTask = page.render(renderCtx);
+			initialState.pageRendering = true;
+
+			// Wait for rendering to finish
+			renderTask.promise.then(function () {
+				initialState.pageRendering = false;
+			});
+
 
 			pageNum.textContent = initialState.currentPage;
 
@@ -259,10 +413,19 @@ const renderPage = () => {
 				});
 				textCanvas.on({
 					'object:modified': callbackModifyingText
+
 				});
+
+
+
+
 
 				textCanvas.setZoom(initialState.zoom);
 				window.textCanvas = textCanvas;
+				window.textCanvas.on('object:selected', function (e) {
+
+					console.log(e);
+				});
 
 
 
@@ -270,6 +433,9 @@ const renderPage = () => {
 
 			let mainCanvas = document.getElementById('canvas');
 			mainCanvas.setAttribute('class', 'overlay0');
+
+
+
 
 
 			//renderStamps();
@@ -370,18 +536,15 @@ fabric.Object.prototype.cornerStyle = 'circle';
 
 
 
-newText.addEventListener('click', () => {
-
-
-
-
+function addNewText(textValue = 'New Text', top = initialState.viewport.height / 5, left = initialState.viewport.width / 4, fontSize = 15) {
 	var newID = (new Date()).getTime().toString().substr(5);
-	var text = new fabric.IText('New Text', {
+	var text = new fabric.IText(textValue, {
 		lockUniScaling: true,
-		fontSize: 15,
+		dirty: false,
+		fontSize: fontSize,
 		fontFamily: 'Times New Roman',
-		left: initialState.viewport.width / 4,
-		top: initialState.viewport.height / 5,
+		left: left,
+		top: top,
 		myid: newID,
 		objecttype: 'text'
 
@@ -413,15 +576,78 @@ newText.addEventListener('click', () => {
 	window.textCanvas.setActiveObject(text);
 	window.textCanvas.renderAll();
 
+}
 
-
-
-
+newText.addEventListener('click', () => {
+	addNewText();
 });
 
 
 padStampAdd.addEventListener('click', () => {
+
+	if (addDataAfterSignature) {
+		addNewTextToPdf(pdfPlaceHolders);
+	} else {
+		if(enableSigning.checked){
+
+		addImage();
+		}
+	}
+});
+
+function collectInputData() {
+	let name      = document.getElementById('printName').value;
+	let notes     = document.getElementById('Txtnotes').value;
+	let checkedBy =	document.getElementById('checkedBy').value;
+	const inputData = {
+		"V1": name,
+		"V2": notes,
+		"V3": '',
+		"V4": moment().format("MMM Do YY"),
+		"V5": moment().format('h:mm:ss a'),
+		"V6": checkedBy
+
+	};
+
+	if (!MassMode.MassMode) {
+
+	document.getElementById('printName').value = '';
+	document.getElementById('Txtnotes').value = '';
+	document.getElementById('checkedBy').value = '';
+	}
+	return inputData;
+}
+
+function addNewTextToPdf(pdfPlaceHolders) {
+	const inputData = collectInputData();
+	const filterValues = [
+		"V1",
+		"V2",
+		"V3",
+		"V4",
+		"V5",
+		"V6"
+	];
+
+	pdfPlaceHolders.forEach(function (element) {
+		if (element.str.includes("V3")) {
+			addDataAfterSignature = false;
+			addImage(element.y, element.x);
+		}
+
+		const key = filterValues.find(value => element.str.includes(value));
+		if (key && inputData[key]) {
+			addNewText(inputData[key], element.y, element.x, 9.5);
+		}
+	});
+}
+
+function addImage(top = 150, left = 150) {
+	if(!enableSigning.checked){
+		return;
+	}
 	$(staticBackdrop).modal('toggle');
+
 	if (!oSignature.isEmpty()) {
 		var imgUrl = oSignature.toDataURL('image/png', {
 			ratio: 1,
@@ -430,20 +656,19 @@ padStampAdd.addEventListener('click', () => {
 		});
 
 
-
 		var newImag = fabric.Image.fromURL(imgUrl, (img) => {
 
 			img.set({
 				transparentCorners: false,
-				top: 150,
-				left: 150
+				top: top,
+				left: left
 
 
 			});
 
-			img.scaleToHeight(100);
-			img.scaleToWidth(200);
-			img.controls.deleteControl = new fabric.Control({
+			img.scaleToHeight(80);
+			img.scaleToWidth(80);
+			/* img.controls.deleteControl = new fabric.Control({
 				x: 0.5,
 				y: -0.5,
 				offsetY: -16,
@@ -464,7 +689,7 @@ padStampAdd.addEventListener('click', () => {
 				render: renderIcon(cloneImg),
 				cornerSize: 24,
 			});
-
+ */
 
 
 
@@ -480,7 +705,7 @@ padStampAdd.addEventListener('click', () => {
 
 		dialog.close();
 	}
-});
+}
 
 
 function deleteObject(_eventData, transform) {
@@ -507,6 +732,13 @@ function cloneObject(_eventData, transform) {
 
 function renderIcon(icon) {
 	return function (ctx, left, top, _styleOverride, fabricObject) {
+
+		if (fabricObject._element !== undefined) {
+			if (fabricObject._element.className === 'canvas-img') {
+				return;
+			}
+		}
+
 		const size = this.cornerSize;
 		ctx.save();
 		ctx.translate(left, top);
@@ -526,7 +758,21 @@ function callbackModifyingText(e) {
 
 }
 
+function callbackSelectedObject(e) {
+	console.log(e);
+	//e.target.setCoords()
+	//window.textCanvas.renderAll();
+	//console.log(e);
+
+}
+
+
+
 async function addFabrcionObjectToPdf(pdfPage) {
+
+	//await getFields(pdfPage.doc , pdfPage);
+
+
 
 	var objects = window.textCanvas.getObjects();
 	var pageWidth = pdfPage.getWidth();
@@ -574,7 +820,7 @@ async function addFabrcionObjectToPdf(pdfPage) {
 		}
 
 	});
-	renderPage();
+	//renderPage();
 
 
 }

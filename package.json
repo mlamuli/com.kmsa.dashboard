@@ -8,6 +8,7 @@
     "clean": "rimraf dist coverage",
     "build": "ui5 build --clean-dest",
     "build:opt": "ui5 build self-contained --clean-dest --all",
+    "deploy": "npx nwabap upload",
     "start": "ui5 serve  --port 8080 -o index.html",
     "start-cdn": "ui5 serve --port 8080 -o index-cdn.html",
     "start:dist": "npm start -- --config ui5-dist.yaml",
@@ -48,9 +49,12 @@
     "fs": "^0.0.1-security",
     "fs-extra": "^11.2.0",
     "jsonwebtoken": "^9.0.2",
+    "nwabap-ui5uploader": "^1.2.0",
     "pdf-lib": "^1.17.1",
     "pdf-parse": "^1.1.1",
+    "pdf.js-extract": "^0.2.1",
     "pdfjs-dist": "^4.7.76",
+    "signature_pad": "^5.0.6",
     "ts-pdf": "^0.12.0",
     "ui5-route-generator": "^2.0.3"
   }

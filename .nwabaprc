@@ -1,0 +1,23 @@
+{
+
+    "base": "./dist",
+
+    "conn_usestrictssl" : false,
+
+    "conn_server": "https://prfioci00d.mobs.int:8001/" ,
+
+    "conn_client" : "100",
+
+    "conn_user": "MLAZ",
+
+    "conn_password": "AminahZulu20255",
+
+    "abap_package": "ZKMSA_FIORI",
+
+    "abap_bsp": "ZDELV_NOTE_SIGN",
+
+    "abap_bsp_text": "Sign Delivery Notes -UI5"  ,
+
+	"abap_transport": "FCDK900099"
+
+}

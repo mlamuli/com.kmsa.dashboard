@@ -12,7 +12,7 @@
             <tnt:header>
 				    <tnt:ToolHeader>
 					<Button
-					
+
 					id="sideNavigationToggleButton"
 					icon="sap-icon://menu2"
 					type="Transparent"
@@ -33,7 +33,7 @@
 					</layoutData>
 				</ToolbarSpacer>
 
-                <Button text="Alan Smith" type="Transparent" press=".handleUserNamePress" ariaHasPopup="Menu">
+                <Button text="Log Off" type="Transparent" press=".handleUserNamePress" >
 					<layoutData>
 						<OverflowToolbarLayoutData priority="NeverOverflow" />
 					</layoutData>
@@ -47,9 +47,9 @@
                     showNotifications="true"
                     notificationsPressed="openNotification"
                     notificationsNumber="2"
-                   
+
                 >
-           
+
                     <ff:additionalContent>
                         <OverflowToolbarButton
                             press="openSettingsMenu"
