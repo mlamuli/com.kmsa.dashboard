@@ -26,6 +26,13 @@ const MassMode = {
 	docsArray: []
 };
 
+const documentAttributes = {
+	ID: undefined,
+	Status: undefined
+};
+
+
+
 
 const pdf = 'document.pdf';
 
@@ -45,9 +52,21 @@ const padStampAdd = document.getElementById('padStampAdd');
 const quickAddContinue = document.getElementById('quickAddContinue');
 const staticBackdropQuickAdd = document.getElementById('staticBackdropQuickAdd');
 
-const enableSigning = document.getElementById('enableSigning');
+const enableSigning = document.querySelector('#enableSigning');
 
-const btnParkAndProcess = document.getElementById('btnParkAndProcess');
+const btnParkAndProcess = document.querySelector('#btnParkAndProcess');
+
+const groupPackedBy = document.querySelector('#groupPackedBy');
+const groupCheckedBy = document.querySelector('#groupCheckedBy');
+const groupReceivedBy = document.querySelector('#groupReceivedBy');
+const groupNotes = document.querySelector('#groupNotes');
+const groupEnableSigning = document.querySelector('#groupEnableSigning');
+
+const receivedBy  = document.querySelector('#printName');
+const notes       = document.querySelector('#Txtnotes');
+const checkedBy   =	document.querySelector('#checkedBy');
+const packedBy    = document.querySelector('#packedBy');
+
 
 let pdfPlaceHolders = {};
 
@@ -88,7 +107,7 @@ const padCanvas = document.getElementById('padCanvas');
 
 
 addSignature.addEventListener('click', () => {
-	enableSigning.checked = true;
+	//enableSigning.checked = true;
 	$(staticBackdrop).modal('toggle');
 
 });
@@ -114,10 +133,89 @@ function base64ToArrayBuffer(base64) {
 }
 
 
+function setPadgroupsState(docStatus) {
+
+	switch (docStatus) {
+		case "A" : // Open
+			packedBy.disabled = false;
+			checkedBy.disabled = true;
+			receivedBy.disabled = true;
+			notes.disabled = true;
+			enableSigning.checked = false;
+			enableSigning.disabled = true;
+
+			break;
+		case "B": // Packed
+			packedBy.disabled = true;
+			checkedBy.disabled = false;
+			receivedBy.disabled = true;
+			notes.disabled = true;
+			enableSigning.checked = false;
+			enableSigning.disabled = true;
+			break;
+		case "C": // Checked
+			packedBy.disabled = true;
+			checkedBy.disabled = true;
+			receivedBy.disabled = false;
+			notes.disabled = false;
+			enableSigning.checked = false;
+			enableSigning.disabled = false;
+			break;
+		default:
+			packedBy.disabled = true;
+			checkedBy.disabled = true;
+			receivedBy.disabled = true;
+			notes.disabled = true;
+			enableSigning.checked = true;
+			enableSigning.disabled = false;
+			break;
+	}
+
+
+	// switch (docStatus) {
+	// 	case "A" : // Open
+	// 		groupPackedBy.style.visibility = 'visible';
+	// 		groupCheckedBy.style.visibility = 'hidden';
+	// 		groupReceivedBy.style.visibility = 'hidden';
+	// 		groupNotes.style.visibility = 'hidden';
+	// 		groupEnableSigning.style.visibility = 'hidden';
+	// 		break;
+	// 	case "B": // Packed
+	// 		groupPackedBy.style.visibility = 'hidden';
+	// 		groupCheckedBy.style.visibility = 'visible';
+	// 		groupReceivedBy.style.visibility = 'hidden';
+	// 		groupNotes.style.visibility = 'hidden';
+	// 		groupEnableSigning.style.visibility = 'hidden';
+	// 		break;
+	// 	case "C": // Checked
+	// 		groupPackedBy.style.visibility = 'hidden';
+	// 		groupCheckedBy.style.visibility = 'hidden';
+	// 		groupReceivedBy.style.visibility = 'visible';
+	// 		groupNotes.style.visibility = 'visible';
+	// 		groupEnableSigning.style.visibility = 'visible';
+	// 		break;
+	// 	default:
+	// 		groupPackedBy.style.visibility = "visible";
+	// 		groupCheckedBy.style.visibility = "visible";
+	// 		groupReceivedBy.style.visibility = 'visible';
+	// 		groupNotes.style.visibility = 'visible';
+	// 		groupEnableSigning.style.visibility = 'visible';
+	// 		break;
+	// }
+
+}
+
+
 window.addEventListener('message', function (event) {
 	var otype = typeof event.data;
 	if (event.data === 'anotateNextPdf') {
 		addNewTextToPdf(pdfPlaceHolders);
+	}
+	if( event.data.ID !== undefined){
+		console.log("Document Attributes received: ", event.data);
+		documentAttributes.ID = event.data.ID;
+		documentAttributes.Status = event.data.Status;
+		setPadgroupsState(event.data.Status);
 	}
 	if (event.data.MassMode !== undefined) {
 		//console.log("MassMode data received: ", event.data);
@@ -126,16 +224,20 @@ window.addEventListener('message', function (event) {
 		MassMode.currentDoc = event.data.currentDoc;
 		MassMode.docsArray = event.data.docsArray;
 		if (MassMode.MassMode) {
+			//enableSigning.checked = true;
+			//document.getElementById('enableSigning').checked = false;
 			//document.getElementById('DivMassMode').hidden = false;
 		}else {
 			//document.getElementById('DivMassMode').hidden = true;
+			//enableSigning.checked = false;
+			//document.getElementById('enableSigning').checked = true;
 		}
 		//console.log("MassMode data received: ", event.data);
 
 	}
 	if (event.data instanceof Blob) {
 
-		console.log("Message received from the parent: "); // Message received from parent
+		//console.log("Message received from the parent: "); // Message received from parent
 
 		const reader = new FileReader();
 		reader.onload = function () {
@@ -190,7 +292,8 @@ async function loadPdf(src, _blob) {
 			"V3",
 			"V4",
 			"V5",
-			"V6"
+			"V6",
+			"V7"
 		];
 
 		data.pages.forEach(function (page, index) {
@@ -203,7 +306,7 @@ async function loadPdf(src, _blob) {
 			}
 		});
 
-		console.log(data);
+	//	console.log(data);
 	});
 
 
@@ -221,9 +324,11 @@ async function loadPdf(src, _blob) {
 
 	quickAddContinue.addEventListener('click', () => {
 		$(staticBackdropQuickAdd).modal('toggle');
-		if (enableSigning.checked) {
+		if ( enableSigning.checked ) {
+
 		$(staticBackdrop).modal('toggle');
 		 addDataAfterSignature = true;
+
 		}else{
 			addDataAfterSignature = false;
 			addNewTextToPdf(pdfPlaceHolders);
@@ -244,7 +349,7 @@ async function loadPdf(src, _blob) {
 		.promise.then((data) => {
 			initialState.pdfDoc = data;
 
-			console.log('pdfDocument', initialState.pdfDoc);
+		//	console.log('pdfDocument', initialState.pdfDoc);
 
 			pageCount.textContent = initialState.pdfDoc.numPages;
 			if (initialState.pageRendering === false) {
@@ -369,7 +474,7 @@ const renderPage = () => {
 	initialState.pdfDoc
 		.getPage(initialState.currentPage)
 		.then((page) => {
-			console.log('page', page);
+			//console.log('page', page);
 
 			const canvas = document.getElementById('canvas');
 			const ctx = canvas.getContext('2d');
@@ -541,7 +646,9 @@ function addNewText(textValue = 'New Text', top = initialState.viewport.height /
 	var text = new fabric.IText(textValue, {
 		lockUniScaling: true,
 		dirty: false,
-		fontSize: fontSize,
+		fontSize: fontSize ,
+		fill : '#0a0a0aff' ,
+		textBackgroundColor: 'rgba(255, 255, 255, 1)',
 		fontFamily: 'Times New Roman',
 		left: left,
 		top: top,
@@ -599,13 +706,25 @@ function collectInputData() {
 	let name      = document.getElementById('printName').value;
 	let notes     = document.getElementById('Txtnotes').value;
 	let checkedBy =	document.getElementById('checkedBy').value;
+	let packedBy  = document.getElementById('packedBy').value;
+
+	let _date     = ''
+	let _time     = '';
+
+	if(documentAttributes.Status === "C")
+   {
+		_date = moment().format("MMM Do YY");
+		_time = moment().format('h:mm:ss a');
+	}
+
 	const inputData = {
 		"V1": name,
 		"V2": notes,
 		"V3": '',
-		"V4": moment().format("MMM Do YY"),
-		"V5": moment().format('h:mm:ss a'),
-		"V6": checkedBy
+		"V4": _date,
+		"V5": _time,
+		"V6": checkedBy,
+		"V7": packedBy
 
 	};
 
@@ -614,6 +733,7 @@ function collectInputData() {
 	document.getElementById('printName').value = '';
 	document.getElementById('Txtnotes').value = '';
 	document.getElementById('checkedBy').value = '';
+	document.getElementById('packedBy').value = '';
 	}
 	return inputData;
 }
@@ -626,7 +746,8 @@ function addNewTextToPdf(pdfPlaceHolders) {
 		"V3",
 		"V4",
 		"V5",
-		"V6"
+		"V6",
+		"V7"
 	];
 
 	pdfPlaceHolders.forEach(function (element) {
@@ -643,7 +764,7 @@ function addNewTextToPdf(pdfPlaceHolders) {
 }
 
 function addImage(top = 150, left = 150) {
-	if(!enableSigning.checked){
+	if(!enableSigning.checked  ){
 		return;
 	}
 	$(staticBackdrop).modal('toggle');

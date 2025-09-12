@@ -5,6 +5,7 @@
 	xmlns:m="sap.m"
 	xmlns:f="sap.f"
 	xmlns:core="sap.ui.core"
+  core:require="{formatter: 'com/kmsa/dashboard/model/formatter'}"
 	xmlns:html="http://www.w3.org/1999/xhtml"
 	xmlns:semantic="sap.m.semantic">
 	<!-- <Page id="myTask_page" title="Tasks Page">
@@ -49,11 +50,11 @@
 
         <Button
           id="btnMassNext"
-          press="onMassNext"
+          press=""
+          enabled=""
           visible="{MassMode>/MassMode}"
           class="sapUiSmallMarginBegin"
-          text="Process"
-          icon="sap-icon://combine"
+          icon="sap-icon://number-sign"
           type="Default"
           >
           <customData>
@@ -89,8 +90,8 @@
 				        }}"/>
 								<Text text="{DeliveriesList>Vbeln}"/>
 								<Text text="{DeliveriesList>Kunag}"/>
-                <Text text="{= ${DeliveriesList>Gbstk}  === 'A' ? 'Open' : 'Partial' }"  />
-
+                <!-- <Text  text="{= ${DeliveriesList>Gbstk}  === 'A' ? 'Open' : 'Partial' }"  /> -->
+               <Text  text="{ path: 'DeliveriesList>Gbstk' , formatter: 'formatter.classStatus' }"  />
 
 							</cells>
 						</ColumnListItem>

@@ -257,7 +257,7 @@
 <body>
 
 
-	<nav   class="navbar sticky-top navbar-expand-lg bg-body-tertiary navbar-dark bg-dark disabled ">
+	<nav class="navbar sticky-top navbar-expand-lg bg-body-tertiary navbar-dark bg-dark disabled ">
 
 		<a href="#" class="space" id="prev_page" title="previous page" data-bs-toggle="tooltip">
 			<i class="bi-chevron-left"></i>
@@ -290,8 +290,9 @@
 			<i class="bi bi-pen-fill"></i>
 		</a>
 
-		<button type="button" class="btn btn-sm btn-primary space" title="Quick Add" id="addQAnnotation" data-bs-toggle="modal" data-bs-target="#staticBackdropQuickAdd">
-        <i class="bi bi-input-cursor-text"></i>
+		<button type="button" class="btn btn-sm btn-primary space" title="Quick Add" id="addQAnnotation"
+			data-bs-toggle="modal" data-bs-target="#staticBackdropQuickAdd">
+			<i class="bi bi-input-cursor-text"></i>
 		</button>
 
 		<div class="vr"></div>
@@ -314,8 +315,8 @@
 
 	<!-- Quick Add Modal -->
 	<div class="modal  fade" id="staticBackdropQuickAdd" data-bs-keyboard="false" tabindex="-1"
-		aria-labelledby="modelLabel" aria-hidden="true" data-bs-backdrop="static">
-		<div class="modal-dialog">
+		aria-labelledby="modelLabel" aria-hidden="true" data-bs-backdrop="static" >
+		<div class="modal-dialog" style="height: fit-content;">
 			<div class="modal-content">
 				<div class="modal-header">
 					<h1 class="modal-title fs-5" id="modelLabel">Quick Add Details</h1>
@@ -323,31 +324,43 @@
 				</div>
 				<div class="modal-body">
 
-					<div class="form-group row">
-						<label for="printName" class="col-sm-5 col-form-label">Received by Full Names :</label>
+					<div class="form-group row" style="padding-bottom: 10px;" id="groupPackedBy" >
+						<label for="packedBy" class="col-sm-5 col-form-label">Packed By :</label>
 						<div class="col-sm-6">
-							<input type="text" class="form-control" id="printName" >
+							<input type="text" class="form-control  padding-bottom" id="packedBy">
 						</div>
+						<br/>
 					</div>
-				<br/>
-					<div class="form-group row">
+
+					<div class="form-group row"  style="padding-bottom: 10px;" id="groupCheckedBy"  >
 
 						<label for="checkedBy" class="col-sm-5 col-form-label">Checked by :</label>
 						<div class="col-sm-6">
-							<input type="text" class="form-control" id="checkedBy" >
+							<input type="text" class="form-control  padding-bottom" id="checkedBy">
 						</div>
+
 					</div>
-					<div class="form-group">
+
+					<div class="form-group row" style="padding-bottom: 10px;" id="groupReceivedBy" >
+						<label for="printName" class="col-sm-5 col-form-label">Received by Full Names :</label>
+						<div class="col-sm-6">
+							<input type="text" class="form-control" id="printName">
+						</div>
+
+					</div>
+
+
+					<div class="form-group" style="padding-bottom: 10px;" id="groupNotes" >
 						<label for="exampleFormControlTextarea1">Notes :</label>
 						<textarea class="form-control" rows="3" id="Txtnotes"></textarea>
 					</div>
 
-				<div class="form-group">
-				<input class="form-check-input" type="checkbox" value="" id="enableSigning" checked>
-				<label class="form-check-label" for="enableSigning">
-					Enable Signing
-				</label>
-				</div>
+					<div class="form-group" id="groupEnableSigning" >
+						<input class="form-check-input" type="checkbox" value="" id="enableSigning" checked>
+						<label class="form-check-label" for="enableSigning">
+							Enable Signing
+						</label>
+					</div>
 
 				</div>
 				<div class="modal-footer">

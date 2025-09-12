@@ -4,6 +4,19 @@ sap.ui.define(function () {
 	return {
 		formatValue: function (value) {
 			return value && value.toUpperCase();
+		},
+
+		classStatus: function (sValue) {
+			switch (sValue) {
+			case "A":
+				return "Open";
+			case "B":
+				return "Packed";
+			case "C":
+				return "Checked";
+			default:
+				return sValue;
+			}
 		}
 	};
 });
