@@ -1,28 +1,27 @@
 <mvc:View controllerName="com.kmsa.dashboard.app.myTask.Home"
-	xmlns:mvc="sap.ui.core.mvc" displayBlock="true"
-	xmlns="sap.m"
-	xmlns:ux="sap.uxap"
-	xmlns:m="sap.m"
-	xmlns:f="sap.f"
-	xmlns:core="sap.ui.core"
-  core:require="{formatter: 'com/kmsa/dashboard/model/formatter'}"
-	xmlns:html="http://www.w3.org/1999/xhtml"
-	xmlns:semantic="sap.m.semantic">
-	<!-- <Page id="myTask_page" title="Tasks Page">
+  xmlns:mvc="sap.ui.core.mvc" displayBlock="true"
+  xmlns="sap.m"
+  xmlns:ux="sap.uxap"
+  xmlns:m="sap.m"
+  xmlns:f="sap.f"
+  xmlns:core="sap.ui.core" core:require="{formatter: 'com/kmsa/dashboard/model/formatter'}"
+  xmlns:html="http://www.w3.org/1999/xhtml"
+  xmlns:semantic="sap.m.semantic">
+  <!-- <Page id="myTask_page" title="Tasks Page">
         <content/>
     </Page> -->
 
-	<SplitContainer >
-		<masterPages  >
-			<semantic:MasterPage title="Find Delivery Note" floatingFooter="true" showSubHeader="true" >
-				<semantic:landmarkInfo>
-					<PageAccessibleLandmarkInfo rootLabel="Root label" headerLabel="Header label" footerLabel="Footer label"></PageAccessibleLandmarkInfo>
-				</semantic:landmarkInfo>
+  <SplitContainer >
+    <masterPages  >
+      <semantic:MasterPage title="Find Delivery Note" floatingFooter="true" showSubHeader="true">
+        <semantic:landmarkInfo>
+          <PageAccessibleLandmarkInfo rootLabel="Root label" headerLabel="Header label" footerLabel="Footer label"></PageAccessibleLandmarkInfo>
+        </semantic:landmarkInfo>
         <semantic:negativeAction>
-          <semantic:NegativeAction text="Reset"  press="onScreenReset" />
+          <semantic:NegativeAction text="Reset" press="onScreenReset" />
         </semantic:negativeAction>
 
-				<!-- <semantic:sort>
+        <!-- <semantic:sort>
 					<semantic:SortSelect change="onSemanticSelectChange" items="{
 							path: 'Deliveries>/Deliveries/Filters',
 							sorter: { path: 'Name' }
@@ -31,95 +30,82 @@
 					</semantic:SortSelect>
 				</semantic:sort> -->
 
-				<!-- Content -->
-				<semantic:content >
-				<FlexBox class="sapUiSmallMargin" alignItems="Start" >
-				<ComboBox  id="SearchByCombo" class="sapUiSmallMarginEnd" selectedKey="Vbeln"  selectionChange="OnSearchByChanged" >
-				<items>
-					<core:Item xmlns:core="sap.ui.core" key="Vbeln"
-						text="Delivery"  id="Delivery"/>
-					<core:Item xmlns:core="sap.ui.core" key="Kunag"
-						text="Customer" id="Customer"/>
-				</items>
-				</ComboBox>
+        <!-- Content -->
+        <semantic:content >
+          <FlexBox class="sapUiSmallMargin" alignItems="Start">
+            <ComboBox id="SearchByCombo" class="sapUiSmallMarginEnd" selectedKey="Kunag" selectionChange="OnSearchByChanged">
+              <items>
+                <core:Item xmlns:core="sap.ui.core" key="Kunag" text="Customer" id="Customer"/>
+                <core:Item xmlns:core="sap.ui.core" key="Vbeln" text="Delivery" id="Delivery"/>
 
-				<SearchField id="SearchInput" class="sapUiSmallMarginEnd" placeholder="Delivery Document Number" search="onSearch" />
+              </items>
+            </ComboBox>
+
+            <SearchField id="SearchInput" class="sapUiSmallMarginEnd" placeholder="Delivery Document Number" search="onSearch" />
 
 
-        <ToggleButton type="Emphasized" class="sapUiSmallMarginBegin" icon="sap-icon://survey"  activeIcon="sap-icon://add-activity-2"  id="btnMassEnable" pressed="true" press="onBtnMassEnable" />
+            <ToggleButton type="Emphasized" class="sapUiSmallMarginBegin" icon="sap-icon://survey" activeIcon="sap-icon://add-activity-2" id="btnMassEnable" pressed="true" press="onBtnMassEnable" />
 
-        <Button
-          id="btnMassNext"
-          press=""
-          enabled=""
-          visible="{MassMode>/MassMode}"
-          class="sapUiSmallMarginBegin"
-          icon="sap-icon://number-sign"
-          type="Default"
-          >
-          <customData>
-              <BadgeCustomData key="badge" value="{MassMode>/Number}" />
-          </customData>
-      </Button>
-				</FlexBox>
-					<Table fixedLayout="true" alternateRowColors="true" id="idProductsTable1" inset="false" items="{path:'DeliveriesList>/'}" class="sapFSemanticPageAlignContent" width="auto" selectionChange="onSelectionChange" includeItemInSelection="true" mode="SingleSelectMaster" >
-
-						<columns>
-							<Column minScreenWidth="Tablet" >
-								<Text text="Date"/>
-							</Column>
-							<Column minScreenWidth="Tablet" demandPopin="true">
-								<Text text="Document"/>
-							</Column>
-							<Column minScreenWidth="Tablet" demandPopin="true">
-								<Text text="Customer"/>
-							</Column>
+            <ToggleButton type="Emphasized" id="btnMassNext" press="onFilterSelected"  visible="{MassMode>/MassMode}" class="sapUiSmallMarginBegin" icon="sap-icon://number-sign" activeIcon="sap-icon://number-sign" >
+              <customData>
+                <BadgeCustomData key="badge" value="{MassMode>/Number}" />
+              </customData>
+            </ToggleButton>
+          </FlexBox>
+          <Table fixedLayout="true" alternateRowColors="true" id="idProductsTable1" inset="false" items="{path:'DeliveriesList>/'}" class="sapFSemanticPageAlignContent" width="auto" selectionChange="onSelectionChange" includeItemInSelection="true" mode="SingleSelectMaster">
+            <headerToolbar>
+              <OverflowToolbar>
+                <Title text="Delivery Notes" level="H2"/>
+                <ToolbarSpacer/>
+                <Button tooltip="Filter" icon="sap-icon://filter" press="handleFilterButtonPressed"/>
+                <Button tooltip="Group" icon="sap-icon://group-2" press="handleGroupButtonPressed"/>
+              </OverflowToolbar>
+            </headerToolbar>
+            <infoToolbar>
+              <OverflowToolbar id="vsdFilterBar" visible="false">
+                <Text id="vsdFilterLabel" />
+              </OverflowToolbar>
+            </infoToolbar>
+            <columns>
+              <Column minScreenWidth="Tablet">
+                <Text text="Date"/>
+              </Column>
               <Column minScreenWidth="Tablet" demandPopin="true">
-								<Text text="Status"/>
-							</Column>
-						</columns>
+                <Text text="Document"/>
+              </Column>
+              <Column minScreenWidth="Tablet" demandPopin="true">
+                <Text text="Customer"/>
+              </Column>
+              <Column minScreenWidth="Tablet" demandPopin="true">
+                <Text text="Status"/>
+              </Column>
+            </columns>
 
-						<items >
-						<ColumnListItem  >
-							<cells >
-								<ObjectIdentifier title="{
+            <items >
+              <ColumnListItem  >
+                <cells >
+                  <ObjectIdentifier title="{
 				        path: 'DeliveriesList>Audat',
 				        type: 'sap.ui.model.type.Date',
 				        formatOptions: {
 				          pattern: 'yyyy/MM/dd'
 				        }}"/>
-								<Text text="{DeliveriesList>Vbeln}"/>
-								<Text text="{DeliveriesList>Kunag}"/>
-                <!-- <Text  text="{= ${DeliveriesList>Gbstk}  === 'A' ? 'Open' : 'Partial' }"  /> -->
-               <Text  text="{ path: 'DeliveriesList>Gbstk' , formatter: 'formatter.classStatus' }"  />
+                  <Text text="{DeliveriesList>Vbeln}"/>
+                  <Text text="{DeliveriesList>Kunag}"/>
+                  <!-- <Text text="{= ${DeliveriesList>Gbstk}  === 'A' ? 'Open' : 'Partial' }" /> -->
+                  <Text text="{ path: 'DeliveriesList>Gbstk' , formatter: 'formatter.classStatus' }" />
 
-							</cells>
-						</ColumnListItem>
-						</items>
-					</Table>
-				</semantic:content>
-
-
-
-			</semantic:MasterPage>
-		</masterPages>
-		<detailPages>
+                </cells>
+              </ColumnListItem>
+            </items>
+          </Table>
+        </semantic:content>
 
 
 
-
-
-
-
-			<semantic:DetailPage title="Delivery Date : {DeliveriesItem>/Audat}   -   Delivery No. : {DeliveriesItem>/Vbeln} " floatingFooter="true" >
-
-				<semantic:content >
-
-						<core:HTML class='no-scrollMain' id="ifram-rander"  content='&lt;iframe width=&quot;99%&quot;  height=&quot;100%&quot;  src=&quot;./app/myTask/index.html&quot; frameborder=&quot;0&quot; id=&quot;pdfData&quot; /&gt;'></core:HTML>
-
-
-
-				</semantic:content>
+      </semantic:MasterPage>
+    </masterPages>
+    <detailPages>
 
 
 
@@ -127,23 +113,41 @@
 
 
 
+      <semantic:DetailPage title="Delivery Date : {DeliveriesItem>/Audat}   -   Delivery No. : {DeliveriesItem>/Vbeln} " floatingFooter="true">
 
-           <semantic:negativeAction >
-           <semantic:NegativeAction visible="{= ${MassMode>/Number} > 1 ? true : false }" text="Park and Process Next" press="_parkDocument"/>
-				</semantic:negativeAction>
+        <semantic:content >
 
-				<semantic:positiveAction>
-					<semantic:PositiveAction text="Save" visible="{= ${MassMode>/MassMode} === false ? true : false }" press="onDocumentSaved"/>
-				</semantic:positiveAction>
+          <core:HTML class='no-scrollMain' id="ifram-rander" content='&lt;iframe width=&quot;99%&quot; height=&quot;100%&quot; src=&quot;./app/myTask/index.html&quot; frameborder=&quot;0&quot; id=&quot;pdfData&quot; /&gt;'></core:HTML>
 
 
 
+        </semantic:content>
 
 
-			</semantic:DetailPage>
-		</detailPages>
 
-	</SplitContainer>
+
+
+        <semantic:positiveAction >
+          <semantic:PositiveAction text="Display Next"   visible="{MassMode>/MassMode}"  press="onDisplayNext"/>
+        </semantic:positiveAction>
+
+
+        <semantic:negativeAction >
+          <semantic:NegativeAction visible="{MassMode>/MassMode}" text="Save and Process Next" press="_parkDocument"/>
+        </semantic:negativeAction>
+
+        <semantic:saveAction>
+          <semantic:SaveAction  visible="{= ${MassMode>/MassMode} === true ? false : true }" press="onDocumentSaved"/>
+        </semantic:saveAction>
+
+
+
+
+
+      </semantic:DetailPage>
+    </detailPages>
+
+  </SplitContainer>
 
 
 </mvc:View>

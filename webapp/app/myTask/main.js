@@ -67,6 +67,8 @@ const notes       = document.querySelector('#Txtnotes');
 const checkedBy   =	document.querySelector('#checkedBy');
 const packedBy    = document.querySelector('#packedBy');
 
+const btnClearAnnotations = document.querySelector('#btnClearAnnotations');
+
 
 let pdfPlaceHolders = {};
 
@@ -97,9 +99,25 @@ colorPicker.addEventListener('input', (event) => {
 
 
 
+btnClearAnnotations.addEventListener('click', () => {
+clearAnnotations();
+});
 
-
-
+function clearAnnotations() {
+	document.getElementById('printName').value = '';
+	document.getElementById('Txtnotes').value = '';
+	document.getElementById('checkedBy').value = '';
+	document.getElementById('packedBy').value = '';
+	//clear all anotations on the page
+	if (window.textCanvas === undefined || window.textCanvas == undefined) {
+		return;
+	}
+	window.textCanvas.getObjects();
+	var canvasObjects = window.textCanvas.getObjects();
+	for (let i = canvasObjects.length - 1; i >= 0; i--) {
+		window.textCanvas.remove(canvasObjects[i]);
+	}
+}
 
 const oSignature = new SignaturePad(canvas_signaturepad);
 const padCanvas = document.getElementById('padCanvas');
@@ -140,7 +158,7 @@ function setPadgroupsState(docStatus) {
 			packedBy.disabled = false;
 			checkedBy.disabled = true;
 			receivedBy.disabled = true;
-			notes.disabled = true;
+			notes.disabled = false;
 			enableSigning.checked = false;
 			enableSigning.disabled = true;
 
@@ -149,7 +167,7 @@ function setPadgroupsState(docStatus) {
 			packedBy.disabled = true;
 			checkedBy.disabled = false;
 			receivedBy.disabled = true;
-			notes.disabled = true;
+			notes.disabled = false;
 			enableSigning.checked = false;
 			enableSigning.disabled = true;
 			break;
@@ -157,8 +175,8 @@ function setPadgroupsState(docStatus) {
 			packedBy.disabled = true;
 			checkedBy.disabled = true;
 			receivedBy.disabled = false;
-			notes.disabled = false;
-			enableSigning.checked = false;
+			notes.disabled = true;
+			enableSigning.checked = true;
 			enableSigning.disabled = false;
 			break;
 		default:
@@ -171,38 +189,6 @@ function setPadgroupsState(docStatus) {
 			break;
 	}
 
-
-	// switch (docStatus) {
-	// 	case "A" : // Open
-	// 		groupPackedBy.style.visibility = 'visible';
-	// 		groupCheckedBy.style.visibility = 'hidden';
-	// 		groupReceivedBy.style.visibility = 'hidden';
-	// 		groupNotes.style.visibility = 'hidden';
-	// 		groupEnableSigning.style.visibility = 'hidden';
-	// 		break;
-	// 	case "B": // Packed
-	// 		groupPackedBy.style.visibility = 'hidden';
-	// 		groupCheckedBy.style.visibility = 'visible';
-	// 		groupReceivedBy.style.visibility = 'hidden';
-	// 		groupNotes.style.visibility = 'hidden';
-	// 		groupEnableSigning.style.visibility = 'hidden';
-	// 		break;
-	// 	case "C": // Checked
-	// 		groupPackedBy.style.visibility = 'hidden';
-	// 		groupCheckedBy.style.visibility = 'hidden';
-	// 		groupReceivedBy.style.visibility = 'visible';
-	// 		groupNotes.style.visibility = 'visible';
-	// 		groupEnableSigning.style.visibility = 'visible';
-	// 		break;
-	// 	default:
-	// 		groupPackedBy.style.visibility = "visible";
-	// 		groupCheckedBy.style.visibility = "visible";
-	// 		groupReceivedBy.style.visibility = 'visible';
-	// 		groupNotes.style.visibility = 'visible';
-	// 		groupEnableSigning.style.visibility = 'visible';
-	// 		break;
-	// }
-
 }
 
 
@@ -210,6 +196,9 @@ window.addEventListener('message', function (event) {
 	var otype = typeof event.data;
 	if (event.data === 'anotateNextPdf') {
 		addNewTextToPdf(pdfPlaceHolders);
+	}
+	if (event.data === 'clearAnnotations') {
+		clearAnnotations();
 	}
 	if( event.data.ID !== undefined){
 		console.log("Document Attributes received: ", event.data);
@@ -643,6 +632,9 @@ fabric.Object.prototype.cornerStyle = 'circle';
 
 function addNewText(textValue = 'New Text', top = initialState.viewport.height / 5, left = initialState.viewport.width / 4, fontSize = 15) {
 	var newID = (new Date()).getTime().toString().substr(5);
+
+
+
 	var text = new fabric.IText(textValue, {
 		lockUniScaling: true,
 		dirty: false,
@@ -907,6 +899,20 @@ async function addFabrcionObjectToPdf(pdfPage) {
 			//obj.scale(initialState.zoom);
 
 			var rgbObj = rgbStringToObject(obj.fill);
+
+			// const words = obj.text.split(' ');
+			// if (words.length > 3) {
+			// 	let newText = '';
+			// 	for (let i = 0; i < words.length; i++) {
+			// 		newText += words[i] + ' ';
+			// 		if ((i + 1) % 3 === 0 && i !== words.length - 1) {
+			// 			newText = newText.trim() + '\n';
+			// 		}
+			// 	}
+			// 	obj.text = newText.trim();
+			// }
+			//pdfPage.setFontColor(PDFLib.rgb(rgbObj.r / 255, rgbObj.g / 255, rgbObj.b / 255));
+
 			pdfPage.drawText(obj.text, {
 				x: obj.left,
 				y: pdfPage.getHeight() - obj.top - obj.getScaledHeight() + 5,
