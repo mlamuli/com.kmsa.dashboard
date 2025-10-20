@@ -32,8 +32,6 @@ const documentAttributes = {
 };
 
 
-
-
 const pdf = 'document.pdf';
 
 const pageNum = document.querySelector('#page_num');
@@ -62,10 +60,10 @@ const groupReceivedBy = document.querySelector('#groupReceivedBy');
 const groupNotes = document.querySelector('#groupNotes');
 const groupEnableSigning = document.querySelector('#groupEnableSigning');
 
-const receivedBy  = document.querySelector('#printName');
-const notes       = document.querySelector('#Txtnotes');
-const checkedBy   =	document.querySelector('#checkedBy');
-const packedBy    = document.querySelector('#packedBy');
+const receivedBy = document.querySelector('#printName');
+const notes = document.querySelector('#Txtnotes');
+const checkedBy = document.querySelector('#checkedBy');
+const packedBy = document.querySelector('#packedBy');
 
 const btnClearAnnotations = document.querySelector('#btnClearAnnotations');
 
@@ -80,7 +78,7 @@ const initialState = {
 	viewport: undefined,
 	pdfDoc: null,
 	currentPage: 1,
-	pageRendering: false ,
+	pageRendering: false,
 	pageCount: 0,
 	zoom: 1.5,
 	texts: []
@@ -100,7 +98,7 @@ colorPicker.addEventListener('input', (event) => {
 
 
 btnClearAnnotations.addEventListener('click', () => {
-clearAnnotations();
+	clearAnnotations();
 });
 
 function clearAnnotations() {
@@ -112,10 +110,12 @@ function clearAnnotations() {
 	if (window.textCanvas === undefined || window.textCanvas == undefined) {
 		return;
 	}
+	if (!MassMode.MassMode) {
 	window.textCanvas.getObjects();
 	var canvasObjects = window.textCanvas.getObjects();
 	for (let i = canvasObjects.length - 1; i >= 0; i--) {
 		window.textCanvas.remove(canvasObjects[i]);
+	}
 	}
 }
 
@@ -154,7 +154,7 @@ function base64ToArrayBuffer(base64) {
 function setPadgroupsState(docStatus) {
 
 	switch (docStatus) {
-		case "A" : // Open
+		case "A": // Open
 			packedBy.disabled = false;
 			checkedBy.disabled = true;
 			receivedBy.disabled = true;
@@ -200,7 +200,7 @@ window.addEventListener('message', function (event) {
 	if (event.data === 'clearAnnotations') {
 		clearAnnotations();
 	}
-	if( event.data.ID !== undefined){
+	if (event.data.ID !== undefined) {
 		console.log("Document Attributes received: ", event.data);
 		documentAttributes.ID = event.data.ID;
 		documentAttributes.Status = event.data.Status;
@@ -216,7 +216,7 @@ window.addEventListener('message', function (event) {
 			//enableSigning.checked = true;
 			//document.getElementById('enableSigning').checked = false;
 			//document.getElementById('DivMassMode').hidden = false;
-		}else {
+		} else {
 			//document.getElementById('DivMassMode').hidden = true;
 			//enableSigning.checked = false;
 			//document.getElementById('enableSigning').checked = true;
@@ -240,7 +240,13 @@ window.addEventListener('message', function (event) {
 			} else {
 				var canvasObjects = window.textCanvas.getObjects();
 				for (let i = canvasObjects.length - 1; i >= 0; i--) {
+					//check if object is image
+					 if (canvasObjects[i] instanceof fabric.Image) {
+						//remove image
+						//window.textCanvas.remove(canvasObjects[i]);
+					} else {
 					window.textCanvas.remove(canvasObjects[i]);
+					}
 				}
 			}
 
@@ -251,6 +257,13 @@ window.addEventListener('message', function (event) {
 
 	} else if (event.data == 'savePdf' || event.data == 'savepdf') {
 		generateStampedPdf();
+	} else if (event.data == 'savePdfChecked' || event.data == 'savePdfChecked') {
+		if (window.textCanvas && window.textCanvas.getObjects().find(obj => obj instanceof fabric.Image)) {
+			generateStampedPdf();
+		}else{
+			//alert("Please add signature before saving the document.");
+			window.parent.postMessage('NotSigned', "*");
+		}
 	}
 });
 
@@ -295,30 +308,30 @@ async function loadPdf(src, _blob) {
 			}
 		});
 
-	//	console.log(data);
+		//	console.log(data);
 	});
 
 
 
 
-/* 	btnParkAndProcess.addEventListener('click', () => {
-		if (MassMode.MassMode) {
-			window.parent.postMessage('parkAndProcessNext', "*");
-			btnParkAndProcess.removeEventListener('click', this);
-			return;
-		}
-	}); */
+	/* 	btnParkAndProcess.addEventListener('click', () => {
+			if (MassMode.MassMode) {
+				window.parent.postMessage('parkAndProcessNext', "*");
+				btnParkAndProcess.removeEventListener('click', this);
+				return;
+			}
+		}); */
 
 
 
 	quickAddContinue.addEventListener('click', () => {
 		$(staticBackdropQuickAdd).modal('toggle');
-		if ( enableSigning.checked ) {
+		if (enableSigning.checked) {
 
-		$(staticBackdrop).modal('toggle');
-		 addDataAfterSignature = true;
+			$(staticBackdrop).modal('toggle');
+			addDataAfterSignature = true;
 
-		}else{
+		} else {
 			addDataAfterSignature = false;
 			addNewTextToPdf(pdfPlaceHolders);
 		}
@@ -338,7 +351,7 @@ async function loadPdf(src, _blob) {
 		.promise.then((data) => {
 			initialState.pdfDoc = data;
 
-		//	console.log('pdfDocument', initialState.pdfDoc);
+			//	console.log('pdfDocument', initialState.pdfDoc);
 
 			pageCount.textContent = initialState.pdfDoc.numPages;
 			if (initialState.pageRendering === false) {
@@ -346,9 +359,9 @@ async function loadPdf(src, _blob) {
 			}
 
 		}).then(() => {
-		if (MassMode.MassMode && pdfPlaceHolders.length > 0) {
-					  addNewTextToPdf(pdfPlaceHolders);
-					}
+			if (MassMode.MassMode && pdfPlaceHolders.length > 0) {
+				addNewTextToPdf(pdfPlaceHolders);
+			}
 		})
 		.catch((err) => {
 			console.error(err);
@@ -638,8 +651,8 @@ function addNewText(textValue = 'New Text', top = initialState.viewport.height /
 	var text = new fabric.IText(textValue, {
 		lockUniScaling: true,
 		dirty: false,
-		fontSize: fontSize ,
-		fill : '#0a0a0aff' ,
+		fontSize: fontSize,
+		fill: '#0a0a0aff',
 		textBackgroundColor: 'rgba(255, 255, 255, 1)',
 		fontFamily: 'Times New Roman',
 		left: left,
@@ -687,24 +700,23 @@ padStampAdd.addEventListener('click', () => {
 	if (addDataAfterSignature) {
 		addNewTextToPdf(pdfPlaceHolders);
 	} else {
-		if(enableSigning.checked){
+		if (enableSigning.checked) {
 
-		addImage();
+			addImage();
 		}
 	}
 });
 
 function collectInputData() {
-	let name      = document.getElementById('printName').value;
-	let notes     = document.getElementById('Txtnotes').value;
-	let checkedBy =	document.getElementById('checkedBy').value;
-	let packedBy  = document.getElementById('packedBy').value;
+	let name = document.getElementById('printName').value;
+	let notes = document.getElementById('Txtnotes').value;
+	let checkedBy = document.getElementById('checkedBy').value;
+	let packedBy = document.getElementById('packedBy').value;
 
-	let _date     = ''
-	let _time     = '';
+	let _date = ''
+	let _time = '';
 
-	if(documentAttributes.Status === "C")
-   {
+	if (documentAttributes.Status === "C") {
 		_date = moment().format("MMM Do YY");
 		_time = moment().format('h:mm:ss a');
 	}
@@ -722,10 +734,10 @@ function collectInputData() {
 
 	if (!MassMode.MassMode) {
 
-	document.getElementById('printName').value = '';
-	document.getElementById('Txtnotes').value = '';
-	document.getElementById('checkedBy').value = '';
-	document.getElementById('packedBy').value = '';
+		document.getElementById('printName').value = '';
+		document.getElementById('Txtnotes').value = '';
+		document.getElementById('checkedBy').value = '';
+		document.getElementById('packedBy').value = '';
 	}
 	return inputData;
 }
@@ -756,70 +768,42 @@ function addNewTextToPdf(pdfPlaceHolders) {
 }
 
 function addImage(top = 150, left = 150) {
-	if(!enableSigning.checked  ){
+	if (!enableSigning.checked) {
 		return;
 	}
+
+	if (window.textCanvas && window.textCanvas.getObjects().find(obj => obj instanceof fabric.Image)) {
+		return;
+	}
+
 	$(staticBackdrop).modal('toggle');
 
 	if (!oSignature.isEmpty()) {
-		var imgUrl = oSignature.toDataURL('image/png', {
+		const imgUrl = oSignature.toDataURL('image/png', {
 			ratio: 1,
 			width: 100,
-			height: 100
+			height: 100,
 		});
 
-
-		var newImag = fabric.Image.fromURL(imgUrl, (img) => {
-
+		const img = new fabric.Image.fromURL(imgUrl, (img) => {
 			img.set({
 				transparentCorners: false,
 				top: top,
-				left: left
-
-
+				left: left,
 			});
 
 			img.scaleToHeight(80);
 			img.scaleToWidth(80);
-			/* img.controls.deleteControl = new fabric.Control({
-				x: 0.5,
-				y: -0.5,
-				offsetY: -16,
-				offsetX: 16,
-				cursorStyle: 'pointer',
-				mouseUpHandler: deleteObject,
-				render: renderIcon(deleteImg),
-				cornerSize: 24,
-			});
-
-			img.controls.cloneControl = new fabric.Control({
-				x: -0.5,
-				y: -0.5,
-				offsetY: -16,
-				offsetX: -16,
-				cursorStyle: 'pointer',
-				mouseUpHandler: cloneObject,
-				render: renderIcon(cloneImg),
-				cornerSize: 24,
-			});
- */
-
-
 
 			window.textCanvas.add(img);
-
 			window.textCanvas.setActiveObject(img);
 			window.textCanvas.renderAll();
 			oSignature.clear();
-
 		});
-
-
-
-		dialog.close();
 	}
-}
 
+	dialog.close();
+}
 
 function deleteObject(_eventData, transform) {
 	const canvas = transform.target.canvas;

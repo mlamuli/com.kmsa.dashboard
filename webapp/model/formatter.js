@@ -14,6 +14,8 @@ sap.ui.define(function () {
 				return "Packed";
 			case "C":
 				return "Checked";
+			case "X":
+				return "Completed";
 			default:
 				return sValue;
 			}

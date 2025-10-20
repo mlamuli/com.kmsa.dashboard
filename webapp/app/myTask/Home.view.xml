@@ -127,9 +127,9 @@
 
 
 
-        <semantic:positiveAction >
+        <!-- <semantic:positiveAction >
           <semantic:PositiveAction text="Display Next"   visible="{MassMode>/MassMode}"  press="onDisplayNext"/>
-        </semantic:positiveAction>
+        </semantic:positiveAction> -->
 
 
         <semantic:negativeAction >
@@ -137,8 +137,12 @@
         </semantic:negativeAction>
 
         <semantic:saveAction>
-          <semantic:SaveAction  visible="{= ${MassMode>/MassMode} === true ? false : true }" press="onDocumentSaved"/>
+          <semantic:SaveAction  visible="{= ${MassMode>/MassMode} === true ? false : true }" enabled="{= ${DeliveriesItem>/Gbstk} === 'X' ? false : true }" press="onDocumentSaved"/>
         </semantic:saveAction>
+
+        <semantic:sendEmailAction>
+					<semantic:SendEmailAction press="onSendEmail"/>
+				</semantic:sendEmailAction>
 
 
 

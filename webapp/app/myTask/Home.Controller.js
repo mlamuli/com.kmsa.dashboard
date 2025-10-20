@@ -14,11 +14,12 @@ sap.ui.define([
 	"sap/ui/model/Sorter",
 	"sap/m/Menu",
 	"sap/m/MenuItem",
-	"sap/ui/Device"
+	"sap/ui/Device",
+	"sap/m/MessageBox"
 
 
 ],
-	function (Controller, JSONModel, Fragment, MessageToast, Label, Input, Text, VBox, Dialog, Button, mobileLibrary, Filter, Sorter, Menu, MenuItem , Device) {
+	function (Controller, JSONModel, Fragment, MessageToast, Label, Input, Text, VBox, Dialog, Button, mobileLibrary, Filter, Sorter, Menu, MenuItem, Device, MessageBox) {
 		"use strict";
 
 
@@ -26,6 +27,8 @@ sap.ui.define([
 			onInit: function () {
 
 				this._formFragments = {};
+
+				this.confirmEmailOnly = true;
 
 				this.WindowEventsRegistered = false
 
@@ -42,6 +45,8 @@ sap.ui.define([
 					"Status": null
 				});
 
+				this.custEmail = "";
+
 				this.getView().setModel(this.MassMode, "MassMode");
 				this.getView().setModel(this.DocumentAttributes, "DocumentAttributes");
 
@@ -52,6 +57,7 @@ sap.ui.define([
 
 				this.ItemData = new JSONModel({});
 				this.CustomerInforData = new JSONModel({});
+				//this.CustomerInforData = new JSONModel({});
 				this.pageStates = [];
 				this._pdfurl = "";
 				this._content = "";
@@ -64,7 +70,7 @@ sap.ui.define([
 						//set date in variable name to format yyyy/MM/dd
 						const date = new Date(name);
 						const formattedDate = date.getFullYear() + '/' + (date.getMonth() + 1) + '/' + date.getDate();
-						return {key: formattedDate, text: name};
+						return { key: formattedDate, text: name };
 						// return {
 						// 	key: name,
 						// 	text: name
@@ -123,19 +129,19 @@ sap.ui.define([
 
 				} else {
 
-				// Get the table and its binding
+					// Get the table and its binding
 
-				const aSelectedItems = oTable.getSelectedItems();
+					const aSelectedItems = oTable.getSelectedItems();
 
-				aSelectedItems.forEach(function(oItem) {
-					const sValueToFilter = that.getView().getModel("DeliveriesList").getContext(oItem.getBindingContextPath()).getProperty("Vbeln");
-					aFilters.push(new sap.ui.model.Filter("Vbeln", sap.ui.model.FilterOperator.EQ, sValueToFilter));
-				});
-				//append oExistingTableFilter to aFilters
-				aFilters.push(...oExistingTableFilter);
-				oBinding.filter(aFilters);
+					aSelectedItems.forEach(function (oItem) {
+						const sValueToFilter = that.getView().getModel("DeliveriesList").getContext(oItem.getBindingContextPath()).getProperty("Vbeln");
+						aFilters.push(new sap.ui.model.Filter("Vbeln", sap.ui.model.FilterOperator.EQ, sValueToFilter));
+					});
+					//append oExistingTableFilter to aFilters
+					aFilters.push(...oExistingTableFilter);
+					oBinding.filter(aFilters);
 
-			}
+				}
 
 			},
 
@@ -184,7 +190,7 @@ sap.ui.define([
 
 				mParams.filterItems.forEach(function (oItem) {
 					const aValue = oItem.getKey();
-					const	oFilter = new Filter("Gbstk", sap.ui.model.FilterOperator.EQ, aValue);
+					const oFilter = new Filter("Gbstk", sap.ui.model.FilterOperator.EQ, aValue);
 					aFilters.push(oFilter);
 				});
 
@@ -218,11 +224,11 @@ sap.ui.define([
 				}
 			},
 
-			onResize: function(oEvent) {
-			const oColumn = this.byId("product");
-			const iWidth = oEvent.getParameter("width");
-			oColumn.setWidth(iWidth + "px");
-		  	},
+			onResize: function (oEvent) {
+				const oColumn = this.byId("product");
+				const iWidth = oEvent.getParameter("width");
+				oColumn.setWidth(iWidth + "px");
+			},
 
 
 
@@ -235,7 +241,7 @@ sap.ui.define([
 
 			},
 
-			onSearch: function (oEvent) {
+			onSearch: function () {
 
 
 
@@ -246,7 +252,7 @@ sap.ui.define([
 				const _key = this.getView().byId("SearchByCombo").getSelectedKey();
 
 
-				const selectedItem = oEvent.getSource().getValue();
+				//const selectedItem = oEvent.getSource().getValue();
 				const searchInput = this.byId("SearchInput");
 
 				const searchValue = searchInput.getValue();
@@ -284,6 +290,7 @@ sap.ui.define([
 							} else {
 								_item.setData([]);
 								that.getView().setModel([], "DeliveriesItem");
+								that.confirmEmailOnly = true;
 							}
 
 
@@ -321,6 +328,7 @@ sap.ui.define([
 			},
 
 			onSelectionChange: function (oEvent) {
+
 				const ifram_rander = this.getView().byId("ifram-rander");
 				ifram_rander.setVisible(true);
 				sap.ui.core.BusyIndicator.show();
@@ -340,16 +348,16 @@ sap.ui.define([
 
 				// do not allow status C or X to be selected in mass mode
 				const oModel = this.getView().getModel("DeliveriesList");
-				for (let i = 0; i < oItemPath.length; i++) {
-					const status = oModel.getProperty(oItemPath[i] + "/Gbstk");
-					if (status === 'C' || status === 'X') {
-						MessageToast.show("Status 'Checked' documents cannot be selected in Mass Mode, Individual document must be signed");
-						//this.getView().byId("idProductsTable1").removeSelectionInterval(i, i);
-						this.getView().byId("idProductsTable1").removeSelections(true);
-						sap.ui.core.BusyIndicator.hide();
-						return;
-					}
-				}
+				// for (let i = 0; i < oItemPath.length; i++) {
+				// 	const status = oModel.getProperty(oItemPath[i] + "/Gbstk");
+				// 	if (status === 'C' || status === 'X') {
+				// 		MessageToast.show("Status 'Checked' documents cannot be selected in Mass Mode, Individual document must be signed");
+				// 		//this.getView().byId("idProductsTable1").removeSelectionInterval(i, i);
+				// 		this.getView().byId("idProductsTable1").removeSelections(true);
+				// 		sap.ui.core.BusyIndicator.hide();
+				// 		return;
+				// 	}
+				// }
 
 
 
@@ -424,8 +432,6 @@ sap.ui.define([
 				//this.getView().getModel("DeliveriesList").refresh();
 
 
-
-
 				const oButton = oEvent.getSource();
 				const isActive = oButton.getPressed();
 				if (!isActive) {
@@ -438,9 +444,6 @@ sap.ui.define([
 					const IfrmaPDFDATA = document.getElementById('pdfData');
 					IfrmaPDFDATA.contentWindow.postMessage(this.MassMode.getData());
 					MessageToast.show("Mass Mode Enabled");
-
-
-
 
 				} else {
 					this.getView().byId("idProductsTable1").setMode(sap.m.ListMode.SingleSelectMaster);
@@ -490,13 +493,19 @@ sap.ui.define([
 
 				sap.ui.core.BusyIndicator.show();
 
-				setTimeout(function () {
-					const IfrmaPDFDATA = document.getElementById('pdfData');
-					IfrmaPDFDATA.contentWindow.postMessage("savePdf");
-
-					//that.onProcessNext();
-
-				}, 1000,);
+				//check if status is C or X
+				const status = lclItem.getProperty("/Gbstk");
+				if (status === 'C') {
+					setTimeout(function () {
+						const IfrmaPDFDATA = document.getElementById('pdfData');
+						IfrmaPDFDATA.contentWindow.postMessage("savePdfChecked");
+					}, 1000,);
+				} else {
+					setTimeout(function () {
+						const IfrmaPDFDATA = document.getElementById('pdfData');
+						IfrmaPDFDATA.contentWindow.postMessage("savePdf");
+					}, 1000,);
+				}
 
 
 
@@ -519,17 +528,37 @@ sap.ui.define([
 					this.getView().getModel("DeliveriesItem").refresh();
 					this.getView().getModel("DeliveriesList").refresh();
 
-					const searchInput = this.byId("SearchInput");
+					const custDataTemp = this.CustomerInforData.getData();
 
-					const searchValue = searchInput.getValue();
+					const IfrmaPDFDATA = document.getElementById('pdfData');
+					if (IfrmaPDFDATA != null) {
+						IfrmaPDFDATA.contentWindow.location.reload();
+					}
+
+					this.getView().byId("idProductsTable1").setMode(sap.m.ListMode.SingleSelectMaster);
+					this.MassMode.setProperty("/MassMode", false);
+					this.MassMode.setProperty("/Number", 0);
+					this.MassMode.setProperty("/currentDoc", 0);
+					this.MassMode.setProperty("/docsArray", []);
+
+					this.onSearch();
+
+					const oBinding = this.getView().byId("idProductsTable1").getBinding("items");
+					oBinding.filter([]);
+					this.confirmEmailOnly = true;
+					this.getView().getModel("CustomerInfor").setData(custDataTemp);
+
+					//const searchInput = this.byId("SearchInput");
+
+					//const searchValue = searchInput.getValue();
 
 					// call clearAnnotations function in main.js
-					const IfrmaPDFDATA = document.getElementById('pdfData');
-					IfrmaPDFDATA.contentWindow.postMessage("clearAnnotations");
+					//const IfrmaPDFDATA = document.getElementById('pdfData');
+					//IfrmaPDFDATA.contentWindow.postMessage("clearAnnotations");
 					//window.location.reload();
 
-					this.byId("SearchInput").setValue(searchValue).focus();
-					this.onDocLoad(_itemPath);
+					//this.byId("SearchInput").setValue(searchValue).focus();
+					//this.onDocLoad(_itemPath);
 
 
 
@@ -619,6 +648,8 @@ sap.ui.define([
 
 
 			onDocLoad: function (oItemPath) {
+
+				this.itemPath = oItemPath;
 				const that = this;
 				let oController = this;
 				const oLclModel = this.getView().getModel("DeliveriesList").getContext(oItemPath[0]);
@@ -641,6 +672,13 @@ sap.ui.define([
 							data.Gbstk = 'A'; //Open
 						}
 						that.DocumentAttributes.setProperty("/Status", data.Gbstk);
+
+						const lclItem = that.CustomerInforData;
+
+						//check if email exist in lclItem
+						if (lclItem.getProperty("/Email") === '' || lclItem.getProperty("/Email") === null || lclItem.getProperty("/Email") === undefined) {
+							that.getCustomerData();
+						}
 
 						const IfrmaPDFAttributes = document.getElementById('pdfData');
 						IfrmaPDFAttributes.contentWindow.postMessage(that.DocumentAttributes.getData());
@@ -672,7 +710,7 @@ sap.ui.define([
 											outData.Gbstk = 'C'; //Checked
 											break;
 										case "C":
-											outData.Gbstk = 'X'; //rechived
+											outData.Gbstk = 'X'; //completed
 											break;
 										default:
 											outData.Gbstk = 'A'; //Open
@@ -706,7 +744,15 @@ sap.ui.define([
 												that.onProcessNext();
 												MessageToast.show('Document ' + results.Vbeln + ' saved.');
 												if (results.Gbstk === 'X') {
-													that.onEmailToCustomer(lclKunag, lclVkorg, lclVbeln);
+													that.custEmail = that.getView().getModel("CustomerInfor").getProperty("/Email");
+													if (that.custEmail === '' || that.custEmail === null || that.custEmail === undefined) {
+														that.custEmail = '';
+													} else {
+
+														that.confirmEmailOnly = false;
+														that.onSendEmailCustomerInfo(results.Vbeln);
+
+													}
 												}
 
 
@@ -725,11 +771,6 @@ sap.ui.define([
 										outData.Vbeln = that.ItemData.getProperty("/Vbeln");
 										outData.Value = pdfVal;
 
-
-
-
-										//sap.ui.core.BusyIndicator.show();
-
 										that.PdfDataModel.create("/pdfSet", outData, {
 
 											success: function (results) {
@@ -738,16 +779,6 @@ sap.ui.define([
 												that.itemData = that.getView().getModel("DeliveriesItem");
 												that.itemData.setProperty("/Gbstk", results.Gbstk);
 												const lclItem = that.itemData;
-
-												// //filter this item out of the table if status is X
-												// if (results.Gbstk === 'X') {
-												// 	const selectedItems = that.getView().byId("idProductsTable1").getSelectedItems();
-												// 	selectedItems.forEach(function (item) {
-												// 		if (item.getBindingContextPath() === oItemPath[0]) {
-												// 			that.getView().byId("idProductsTable1").removeItem(item);
-												// 		}
-												// 	}.bind(this));
-												// }
 
 												const lclKunag = lclItem.getProperty("/Kunag");
 												const lclVkorg = lclItem.getProperty("/Vkorg");
@@ -767,12 +798,19 @@ sap.ui.define([
 												_IfrmaPDFDATA.contentWindow.postMessage(_blob);
 												jQuery.sap.addUrlWhitelist("blob"); // register blob url as whitelist
 
+												//load document usng this.itemPath
+												//that.onDocLoad(that.itemPath);
+
 												that.DocumentAttributes.setProperty("/Status", results.Gbstk);
+												that.getView().getModel("DeliveriesItem").setProperty("/Gbstk", results.Gbstk);
 
 												const IfrmaPDFAttributes = document.getElementById('pdfData');
 												IfrmaPDFAttributes.contentWindow.postMessage(that.DocumentAttributes.getData());
 												if (results.Gbstk === 'X') {
-													that.onEmailToCustomer(lclKunag, lclVkorg, lclVbeln);
+
+													// call clearAnnotations function in main.js
+													 const IfclearAnnotations = document.getElementById('pdfData');
+													IfclearAnnotations.contentWindow.postMessage("clearAnnotations");
 												}
 
 											}.bind(this),
@@ -787,6 +825,9 @@ sap.ui.define([
 									}
 
 
+								} else if  (typeof event.data === "string" &&   event.data === "NotSigned") {
+									sap.ui.core.BusyIndicator.hide();
+									MessageToast.show("Document not signed. Please sign the document before Saving.");
 								}
 
 
@@ -808,11 +849,65 @@ sap.ui.define([
 
 			},
 
+			asyncDocumentLoad: function () {
+				this.onProcessNext();
+				//return Promise.resolve("done" );
+			},
+
+
+
+
+			onSendEmail: function (oEvent) {
+				const canSend = true;
+				const that = this;
+				const lclItem = this.getView().getModel("DeliveriesItem");
+				if (lclItem === null || lclItem === undefined) {
+					MessageToast.show('No data to Send. Please select a delivery note');
+					return;
+				}
+
+
+				//check if status is X
+				const status = lclItem.getProperty("/Gbstk");
+				if (status !== 'X') {
+					MessageBox.warning("Delivery note is not Completed. Do you want to continue?", {
+						actions: [MessageBox.Action.YES, MessageBox.Action.CANCEL],
+						emphasizedAction: MessageBox.Action.YES,
+						onClose: function (sAction) {
+							if (sAction === "YES") {
+
+								const lclKunag = lclItem.getProperty("/Kunag");
+								const lclVkorg = lclItem.getProperty("/Vkorg");
+								const lclVbeln = lclItem.getProperty("/Vbeln");
+								that.onEmailToCustomer(lclKunag, lclVkorg, lclVbeln);
+							} else {
+
+								return;
+							}
+						},
+						dependentOn: this.getView()
+					});
+					//return;
+				} else {
+					const lclKunag = lclItem.getProperty("/Kunag");
+					const lclVkorg = lclItem.getProperty("/Vkorg");
+					const lclVbeln = lclItem.getProperty("/Vbeln");
+					this.onEmailToCustomer(lclKunag, lclVkorg, lclVbeln);
+				}
+
+
+
+			},
+
 
 			onEmailToCustomer: function (lclKunag, lclVkorg, lclVbeln) {
-				//this.getView().byId("emailToCustomer").open();
+
 
 				const that = this;
+				that.custEmail = this.getView().getModel("CustomerInfor").getProperty("/Email");
+				if (that.custEmail === '' || that.custEmail === null || that.custEmail === undefined) {
+					that.custEmail = '';
+				}
 
 
 				if (lclKunag === '' || lclVkorg === '' || lclVbeln === '') {
@@ -826,9 +921,10 @@ sap.ui.define([
 
 					success: function (data, headers) {
 
-
-
 						that.CustomerInforData.setData(data);
+						if (that.custEmail !== '') {
+							that.CustomerInforData.setProperty("/Email", that.custEmail);
+						}
 						that.getView().setModel(that.CustomerInforData, "CustomerInfor");
 						that.initPopOver();
 						sap.ui.core.BusyIndicator.hide();
@@ -850,18 +946,31 @@ sap.ui.define([
 			getCustomerData: function () {
 				const that = this;
 				const lclItem = this.getView().getModel("DeliveriesItem");
-				const lclVbeln = lclItem.getProperty("/Kunag");
+				const lclVbeln = lclItem.getProperty("/Vbeln");
+				const lclVkorg = lclItem.getProperty("/Vkorg");
+				const lclKunag = lclItem.getProperty("/Kunag");
+
+				if (lclKunag === '' || lclVkorg === '' || lclVbeln === '') {
+					MessageToast.show('No data to Save');
+					return;
+				}
+
+
+
 
 				sap.ui.core.BusyIndicator.show();
 
-				this.getView().getModel("Deliveries").read("/EtCustomerDetailsSet('" + lclVbeln + "')", {
+				this.getView().getModel("Deliveries").read("/EtCustomerDetailsSet(KUNAG='" + lclKunag + "',VBELN='" + lclVbeln + "',VKORG='" + lclVkorg + "')", {
 
 					success: function (data, headers) {
 
 						that.CustomerInforData.setData(data);
 						that.getView().setModel(that.CustomerInforData, "CustomerInfor");
-						let IfrmaPDFDATA = document.getElementById('pdfData');
-						IfrmaPDFDATA.contentWindow.postMessage(data);
+						if (data.Email === '' || data.Email === null) {
+							that.initPopOver()
+						}
+						//let IfrmaPDFDATA = document.getElementById('pdfData');
+						//IfrmaPDFDATA.contentWindow.postMessage(data);
 						sap.ui.core.BusyIndicator.hide();
 					},
 					error: function (err) {
@@ -886,7 +995,7 @@ sap.ui.define([
 				this.oDialog.close();
 			},
 
-			onSendEmailCustomerInfo: function (e) {
+			onSendEmailCustomerInfo: function (docId) {
 				const that = this;
 				sap.ui.core.BusyIndicator.show();
 
@@ -894,27 +1003,61 @@ sap.ui.define([
 				outData.KUNAG = that.CustomerInforData.getProperty("/KUNAG");
 				outData.NameOrg1 = that.CustomerInforData.getProperty("/NameOrg1");
 				outData.Email = that.CustomerInforData.getProperty("/Email");
-				outData.VBELN = that.ItemData.getProperty("/Vbeln");
+				if (docId.oSource) {
+					outData.VBELN = that.ItemData.getProperty("/Vbeln");
+				} else {
+					outData.VBELN = docId;
+				}
 
-				// if (outData.Email != ''){
-
-				// }
+				if (that.confirmEmailOnly === true) {
+					MessageToast.show('Email address updated successfully');
+					that.confirmEmailOnly = false;
+					that.oDialog.close();
+					sap.ui.core.BusyIndicator.hide();
+					return;
+				}
 				this.getView().getModel("Deliveries").create("/EtCustomerDetailsSet", outData, {
 
 					success: function (data, headers) {
 						that.oDialog.close();
 						MessageToast.show('Email sent to customer');
+
+						if (that.massMode.getProperty("/MassMode")	=== true || that.massMode.getProperty("/MassMode") !== undefined) {
+							return;
+						}
+
+						const IfrmaPDFDATA = document.getElementById('pdfData');
+						if (IfrmaPDFDATA != null) {
+							IfrmaPDFDATA.contentWindow.location.reload();
+						}
+
+						//call document load function to refresh document status
+						that.onDocLoad(that.itemPath);
+
 						//remove items with status X from the table
 						//get all existing filters on the table and refresh the table with existing filters
-						const oBinding = that.getView().byId("idProductsTable1").getBinding("items");
-						const existingFilters = oBinding.aFilters;
-						//add filter to remove status X
-						const statusXFilter = new Filter("Gbstk", sap.ui.model.FilterOperator.NE, "X");
-						existingFilters.push(statusXFilter);
+						// const oBinding = that.getView().byId("idProductsTable1").getBinding("items");
+						// const existingFilters = oBinding.aFilters;
+						// //add filter to remove status X
+						// const statusXFilter = new Filter("Gbstk", sap.ui.model.FilterOperator.NE, "X");
+						// existingFilters.push(statusXFilter);
 
-						//refres item data
-						//that.getView().getModel("DeliveriesList").refresh();
-						oBinding.filter(existingFilters);
+						// //that.getView().getModel("DeliveriesList").refresh();
+						// oBinding.filter(existingFilters, true);
+
+						// //the above logic does not work as expected, so we will manually remove items with status X from the table and apply existing filters
+						// const oModel = that.getView().getModel("DeliveriesList");
+						// const aTableData = oModel.getData();
+						// const filteredData = aTableData.filter(item => item.Gbstk !== 'X');
+						// oModel.setData(filteredData);
+
+
+
+
+
+						// //refresh item and list model
+						that.getView().getModel("DeliveriesItem").refresh(true);
+						that.getView().getModel("DeliveriesList").refresh(true);
 
 
 
@@ -947,10 +1090,21 @@ sap.ui.define([
 
 				sap.ui.core.BusyIndicator.show();
 
-				setTimeout(function () {
-					const IfrmaPDFDATA = document.getElementById('pdfData');
-					IfrmaPDFDATA.contentWindow.postMessage("savePdf");
-				}, 1000,);
+				//check if status is C or X
+				const status = lclItem.getProperty("/Gbstk");
+				if (status === 'C') {
+					setTimeout(function () {
+						const IfrmaPDFDATA = document.getElementById('pdfData');
+						IfrmaPDFDATA.contentWindow.postMessage("savePdfChecked");
+					}, 1000,);
+				} else {
+					setTimeout(function () {
+						const IfrmaPDFDATA = document.getElementById('pdfData');
+						IfrmaPDFDATA.contentWindow.postMessage("savePdf");
+					}, 1000,);
+				}
+
+
 
 			},
 
